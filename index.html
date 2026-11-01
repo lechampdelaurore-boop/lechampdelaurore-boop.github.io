@@ -465,6 +465,8 @@ dialog li b { white-space: nowrap; }
   var TOPIC = 'appli-marc'; // nom de la balise <meta> et du sujet GitHub qui ajoutent une appli ici
   var KEY = 'applis-marc-liste-v1';
   var NEW_DAYS = 14;
+  // Badge « Nouveau ! » seulement pour les applis créées après cette date (pas pour les applis déjà là le 1er novembre 2026).
+  var NEW_AFTER = Date.parse('2026-11-01T18:40:00Z');
   var COLORS = ['var(--v-lilas)', 'var(--v-ciel)', 'var(--v-menthe)', 'var(--v-soleil)', 'var(--v-rose)', 'var(--v-peche)'];
   var EMOJI = ['🌟', '🎈', '🍓', '🐣', '🌈', '🍀'];
 
@@ -525,7 +527,7 @@ dialog li b { white-space: nowrap; }
       go.className = 'app-go'; go.textContent = '▶'; go.setAttribute('aria-hidden', 'true');
 
       link.append(icon, text, go);
-      if (a.created && Date.now() - Date.parse(a.created) < NEW_DAYS * 864e5) {
+      if (a.created && Date.parse(a.created) > NEW_AFTER && Date.now() - Date.parse(a.created) < NEW_DAYS * 864e5) {
         var b = document.createElement('span');
         b.className = 'badge-nouveau'; b.textContent = 'Nouveau !';
         link.appendChild(b);
