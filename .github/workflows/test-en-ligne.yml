@@ -1,0 +1,25 @@
+# Après chaque mise en ligne (et chaque matin), ouvre le site publié dans Chrome au format
+# téléphone : la page d'accueil liste les applis, et chaque appli est installable et marche hors ligne.
+name: Test du site en ligne
+on:
+  workflow_run:
+    workflows: ["pages-build-deployment"]
+    types: [completed]
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+jobs:
+  en-ligne:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-save playwright@1.49.1 && npx playwright install --with-deps chromium
+      - run: node tests/en-ligne.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: captures-en-ligne
+          path: captures/

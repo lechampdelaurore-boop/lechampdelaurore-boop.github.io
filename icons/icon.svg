@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD6E8"/><stop offset="1" stop-color="#D9CCFF"/></linearGradient></defs>
+<rect width="512" height="512" rx="112" fill="url(#g)"/>
+<g fill="#FFFFFF" opacity=".8"><path d="M92 120 l8 18 18 8 -18 8 -8 18 -8 -18 -18 -8 18 -8z"/><path d="M420 360 l6 13 13 6 -13 6 -6 13 -6 -13 -13 -6 13 -6z"/></g>
+<g transform="translate(52.0 58.0) scale(2.55)">
+      
+      <path d="M80 30 C80 22 82 16 87 11" fill="none" stroke="#2B2340" stroke-width="5" stroke-linecap="round"/>
+      <path d="M87 12 C96 2 111 5 114 12 C106 21 93 21 87 12Z" fill="#8EE3C8" stroke="#2B2340" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M83 17 C73 8 61 11 58 17 C66 25 77 24 83 17Z" fill="#8EE3C8" stroke="#2B2340" stroke-width="4" stroke-linejoin="round"/>
+      <ellipse cx="58" cy="144" rx="14" ry="7" fill="#FFD2E3" stroke="#2B2340" stroke-width="4"/>
+      <ellipse cx="102" cy="144" rx="14" ry="7" fill="#FFD2E3" stroke="#2B2340" stroke-width="4"/>
+      <ellipse cx="24" cy="106" rx="10" ry="13" fill="#FFE4EE" stroke="#2B2340" stroke-width="4"/>
+      <g><ellipse cx="140" cy="80" rx="10" ry="14" fill="#FFE4EE" stroke="#2B2340" stroke-width="4" transform="rotate(-20 140 80)"/></g>
+      <path d="M80 30 C118 30 140 60 140 94 C140 126 114 144 80 144 C46 144 20 126 20 94 C20 60 42 30 80 30Z" fill="#FFF0F6" stroke="#2B2340" stroke-width="5"/>
+      <path d="M44 64 C50 52 60 46 70 44" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" opacity=".9"/>
+      <g>
+        <ellipse cx="60" cy="90" rx="8" ry="10" fill="#2B2340"/>
+        <ellipse cx="100" cy="90" rx="8" ry="10" fill="#2B2340"/>
+        <circle cx="63" cy="86" r="3.2" fill="#FFFFFF"/>
+        <circle cx="103" cy="86" r="3.2" fill="#FFFFFF"/>
+      </g>
+      <ellipse cx="45" cy="106" rx="10" ry="6" fill="#FF8FB1" opacity=".75"/>
+      <ellipse cx="115" cy="106" rx="10" ry="6" fill="#FF8FB1" opacity=".75"/>
+      <path d="M71 104 Q75.5 111 80 104 Q84.5 111 89 104" fill="none" stroke="#2B2340" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+</svg>
