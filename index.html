@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Les applis de Marc</title>
+<meta name="description" content="Toutes les applis pour réviser et jouer, au même endroit.">
+<meta name="theme-color" content="#FFF4FA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1E1933" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Applis Marc">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+/* ==========================================================================
+   Charte commune des applis de Marc — v1 (1er novembre 2026)
+   À coller en haut du <style> de chaque index.html (pas de fichier externe :
+   chaque appli reste un seul index.html). Voir charte.md pour les règles.
+   Polices : copier design/fonts/ dans le dossier fonts/ de l'appli.
+   ========================================================================== */
+
+@font-face { font-family: 'Fredoka'; font-style: normal; font-weight: 300 700; font-display: swap; src: url('fonts/fredoka-latin.woff2') format('woff2'); }
+@font-face { font-family: 'Nunito'; font-style: normal; font-weight: 200 1000; font-display: swap; src: url('fonts/nunito-latin.woff2') format('woff2'); }
+
+/* ---------- 1. Jetons (couleurs, formes, polices) ---------- */
+:root {
+  color-scheme: light dark;
+
+  /* Fond et surfaces */
+  --bg: #FFF4FA;            /* haut du dégradé de fond (rose très pâle) */
+  --bg2: #EEF4FF;           /* bas du dégradé (bleu très pâle) */
+  --surface: #FFFFFF;       /* cartes, bulles, boutons doux */
+  --surface2: #F4F1FF;      /* touches du clavier, zones calmes */
+  --track: #E4DEF7;         /* fond des barres de progression */
+
+  /* Encre : même violet nuit que le contour des 30 personnages */
+  --ink: #2B2340;           /* texte */
+  --muted: #6B6190;         /* texte secondaire */
+  --line: #2B2340;          /* contours et ombres dures */
+
+  /* Rôles de couleur (un rôle = une couleur, dans toutes les applis) */
+  --action: #3B5BFF;        /* LE bouton principal (Commencer, Valider, Suivant) */
+  --on-action: #FFFFFF;
+  --pompon: #FF6FA5;        /* rose de Pompon : cœurs, « Nouveau », bouton ▶ de l'accueil */
+  --on-pompon: #FFFFFF;
+  --sun: #FFD45C;           /* étoiles, récompenses, astuces, focus clavier */
+  --on-sun: #2B2340;
+  --good: #2BC48A;          /* bonne réponse, OK */
+  --on-good: #0B2E20;
+  --tint-good: #D8F6E8;     /* carte réussie */
+  --retry: #FFB38A;         /* « à retenter » (jamais de rouge) */
+  --tint-retry: #FFE4D6;    /* carte à retenter */
+
+  /* 6 pastels (pastilles A-F, cartes de l'accueil, zones de carte) */
+  --p-rose: #FFD2E3;
+  --p-soleil: #FFE9A3;
+  --p-menthe: #C6F1E2;
+  --p-lilas: #E0D6FF;
+  --p-ciel: #CDEBFF;
+  --p-peche: #FFDCC8;
+
+  /* 6 couleurs vives (icônes, personnages, confettis) */
+  --v-rose: #FF6FA5;
+  --v-soleil: #FFD45C;
+  --v-menthe: #8EE3C8;
+  --v-lilas: #C9B6FF;
+  --v-ciel: #9AD7FF;
+  --v-peche: #FFB38A;
+
+  /* Lecture (applis de français) */
+  --syl-a: #2F4FE0;         /* syllabes alternées : bleu… */
+  --syl-b: #C92A62;         /* …et framboise */
+  --muette: #A39DB8;        /* lettre muette grisée */
+  --son-cle: #FFE9A3;       /* fond de la lettre qui décide du son */
+  --ligne-b: #EEF1FF;       /* une ligne sur deux */
+
+  /* Polices */
+  --display: 'Fredoka', 'Trebuchet MS', system-ui, sans-serif;  /* titres, boutons, chiffres */
+  --body: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif; /* texte */
+  --lecture: 'Nunito', Arial, sans-serif;                        /* texte à lire */
+
+  /* Formes */
+  --bord: 3px;
+  --r-carte: 28px;
+  --r-btn: 22px;
+  --r-touche: 18px;
+  --r-pastille: 999px;
+  --ombre: 0 5px 0 var(--line);
+  --ombre-carte: 0 6px 0 var(--line);
+  --toucher: 56px;          /* hauteur mini d'un bouton */
+
+  /* Mouvement */
+  --ressort: cubic-bezier(.3, 1.6, .5, 1);
+  --deco: .55;              /* opacité des petits dessins de fond */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1E1933;
+    --bg2: #171B36;
+    --surface: #2B2448;
+    --surface2: #352D57;
+    --track: #3D3466;
+    --ink: #FBEFFF;
+    --muted: #C3B7E8;
+    --line: #120E22;        /* le contour reste sombre, même la nuit */
+    --action: #7F98FF;
+    --on-action: #120E22;
+    --pompon: #FF8DB9;
+    --on-pompon: #2A0F1E;
+    --good: #3DDC97;
+    --tint-good: #1D4A3D;
+    --retry: #FF9F7A;
+    --tint-retry: #5A3326;
+    --p-rose: #5A3552;
+    --p-soleil: #5A4A24;
+    --p-menthe: #24504A;
+    --p-lilas: #433A72;
+    --p-ciel: #283F68;
+    --p-peche: #5A3A2E;
+    --syl-a: #9DB0FF;
+    --syl-b: #FF8DB4;
+    --muette: #7D7499;
+    --son-cle: #5A4A24;
+    --ligne-b: #262046;
+    --deco: .25;
+  }
+}
+
+/* ---------- 2. Base ---------- */
+[hidden] { display: none !important; }
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; background: var(--bg2); }
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: linear-gradient(170deg, var(--bg) 0%, var(--bg2) 100%) no-repeat;
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 17px;
+  line-height: 1.45;
+  overflow-x: hidden;
+}
+button, input, select { font: inherit; color: inherit; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 4px solid var(--sun); outline-offset: 3px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 700; line-height: 1.1; margin: 0; }
+h1 { font-size: clamp(1.6rem, 7vw, 2.4rem); }
+h2 { font-size: 1.4rem; }
+.wrap {
+  max-width: 560px; margin: 0 auto;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+}
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- 3. En-tête commun : 🏠 · titre · ⚙ ---------- */
+.entete { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.entete .titre { flex: 1; min-width: 0; font-family: var(--display); font-weight: 700; font-size: 1.25rem; text-align: center; }
+.rond {                    /* bouton rond (🏠, ⚙, ✕, son) */
+  flex: none; width: 48px; height: 48px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 22px; text-decoration: none; color: var(--ink);
+  background: var(--surface); border: var(--bord) solid var(--line); box-shadow: 0 4px 0 var(--line); cursor: pointer;
+}
+.rond:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+
+/* ---------- 4. Boutons ---------- */
+.btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; min-height: var(--toucher); padding: 10px 22px;
+  font: 600 1.2rem var(--display); text-decoration: none;
+  color: var(--ink); background: var(--surface);
+  border: var(--bord) solid var(--line); border-radius: var(--r-btn);
+  box-shadow: var(--ombre); cursor: pointer;
+  transition: transform .1s ease, box-shadow .1s ease;
+}
+.btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--line); }
+.btn:disabled { opacity: .45; cursor: default; transform: none; box-shadow: var(--ombre); }
+.btn-action { background: var(--action); color: var(--on-action); }   /* un seul par écran */
+.btn-soleil { background: var(--sun); color: var(--on-sun); }         /* bonus, installer */
+.btn-ok { background: var(--good); color: var(--on-good); }
+.btn-petit { width: auto; min-height: 44px; padding: 6px 16px; font-size: 1rem; border-radius: var(--r-pastille); box-shadow: 0 4px 0 var(--line); }
+
+/* ---------- 5. Cartes, bulles, pastilles ---------- */
+.carte {
+  background: var(--surface); border: var(--bord) solid var(--line);
+  border-radius: var(--r-carte); box-shadow: var(--ombre-carte); padding: 20px;
+}
+.carte.reussie { background: var(--tint-good); }
+.carte.a-retenter { background: var(--tint-retry); }
+.bulle {                   /* bulle de dialogue d'un personnage */
+  position: relative; background: var(--surface); border: var(--bord) solid var(--line);
+  border-radius: 26px; box-shadow: var(--ombre); padding: 12px 16px;
+}
+.pastille {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 2px 12px;
+  border: 2px solid var(--line); border-radius: var(--r-pastille);
+  background: var(--surface); font: 700 .9rem var(--body); white-space: nowrap;
+}
+.pastille.soleil { background: var(--p-soleil); }
+.pastille.rose { background: var(--p-rose); }
+.pastille.menthe { background: var(--p-menthe); }
+.badge-nouveau {
+  display: inline-block; background: var(--sun); color: var(--on-sun);
+  border: var(--bord) solid var(--line); border-radius: var(--r-pastille);
+  padding: 1px 10px 2px; font: 700 .85rem var(--display); transform: rotate(4deg);
+}
+.etiquette { font: 800 .75rem var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.astuce {
+  background: var(--sun); color: var(--on-sun); border-radius: 18px;
+  padding: 10px 14px; font-weight: 700;
+}
+.astuce::before { content: '💡 '; }
+
+/* ---------- 6. Progression ---------- */
+.barre { height: 18px; border: var(--bord) solid var(--line); border-radius: var(--r-pastille); background: var(--track); overflow: hidden; }
+.barre > i { display: block; height: 100%; width: 0; background: var(--good); border-radius: inherit; transition: width .4s var(--ressort); }
+
+/* ---------- 7. Choix A-F (QCM) et clavier ---------- */
+.choix {
+  display: flex; align-items: center; gap: 10px; width: 100%; min-height: var(--toucher);
+  padding: 8px 14px; text-align: left; font: 600 1.1rem var(--display);
+  background: var(--surface); border: var(--bord) solid var(--line);
+  border-radius: var(--r-touche); box-shadow: 0 4px 0 var(--line); cursor: pointer;
+}
+.choix:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+.choix .lettre {
+  flex: none; width: 30px; height: 30px; display: grid; place-items: center;
+  border: 2px solid var(--line); border-radius: 10px; font-size: .9rem; background: var(--p-lilas);
+}
+.choix:nth-child(6n+1) .lettre { background: var(--p-rose); }
+.choix:nth-child(6n+2) .lettre { background: var(--p-soleil); }
+.choix:nth-child(6n+3) .lettre { background: var(--p-menthe); }
+.choix:nth-child(6n+4) .lettre { background: var(--p-lilas); }
+.choix:nth-child(6n+5) .lettre { background: var(--p-peche); }
+.choix:nth-child(6n+6) .lettre { background: var(--p-ciel); }
+.choix.bon { background: var(--tint-good); }
+.choix.a-revoir { background: var(--tint-retry); }
+.touche {
+  min-height: 64px; font: 600 1.8rem var(--display);
+  background: var(--surface); border: var(--bord) solid var(--line);
+  border-radius: var(--r-touche); box-shadow: 0 4px 0 var(--line); cursor: pointer;
+}
+.touche:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+.touche.douce { background: var(--surface2); }
+.touche.ok { background: var(--good); color: var(--on-good); }
+
+/* ---------- 8. Réglages : interrupteur ---------- */
+.interrupteur { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: var(--toucher); font-weight: 700; cursor: pointer; }
+.interrupteur input { appearance: none; flex: none; width: 58px; height: 34px; margin: 0; border: var(--bord) solid var(--line); border-radius: var(--r-pastille); background: var(--track); position: relative; cursor: pointer; transition: background .2s; }
+.interrupteur input::after { content: ''; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: var(--surface); border: 2px solid var(--line); transition: transform .2s var(--ressort); }
+.interrupteur input:checked { background: var(--good); }
+.interrupteur input:checked::after { transform: translateX(24px); }
+
+/* ---------- 9. Texte à lire (applis de français) ---------- */
+.texte-lecture {
+  font-family: var(--lecture); font-size: 22px; font-weight: 600; line-height: 2;
+  letter-spacing: .02em; word-spacing: .12em; max-width: 34ch;
+}
+.texte-lecture .ligne { display: block; padding: 0 10px; border-radius: 10px; }
+.texte-lecture .ligne:nth-child(even) { background: var(--ligne-b); }
+.syl-a { color: var(--syl-a); }
+.syl-b { color: var(--syl-b); }
+.muette { color: var(--muette); }
+.son-cle { background: var(--son-cle); border-radius: 6px; box-shadow: 0 0 0 2px var(--son-cle); }
+
+/* ---------- 10. Animations (désactivables) ---------- */
+@keyframes apparait { from { transform: scale(.85); opacity: 0; } }
+@keyframes bravo { 0% { transform: scale(1); } 30% { transform: scale(1.08) rotate(-2deg); } 55% { transform: scale(.97) rotate(1deg); } 80% { transform: scale(1.02); } 100% { transform: scale(1); } }
+@keyframes non { 0%, 100% { transform: translateX(0) rotate(0); } 20% { transform: translateX(-10px) rotate(-3deg); } 40% { transform: translateX(9px) rotate(2.5deg); } 60% { transform: translateX(-6px) rotate(-1.5deg); } 80% { transform: translateX(3px) rotate(.5deg); } }
+@keyframes saute { 0%, 60%, 100% { transform: translateY(0) scale(1, 1); } 70% { transform: translateY(0) scale(1.06, .94); } 82% { transform: translateY(-10px) scale(.97, 1.03); } }
+@keyframes flotte { 50% { transform: translateY(-12px) rotate(12deg); } }
+@keyframes etoile { 0% { transform: translate(0, 0) scale(.3); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate(var(--dx, 0), var(--dy, -80px)) scale(1) rotate(160deg); opacity: 0; } }
+@keyframes arrive { 0% { transform: translateY(40px) scale(.6); opacity: 0; } 60% { transform: translateY(-8px) scale(1.05); opacity: 1; } 100% { transform: none; } }
+
+.anim-apparait { animation: apparait .45s var(--ressort) both; }
+.anim-bravo { animation: bravo .6s ease both; }          /* bonne réponse : la carte rebondit */
+.anim-non { animation: non .5s ease both; }              /* erreur : la carte secoue la tête */
+.anim-saute { animation: saute 2.6s ease-in-out infinite; transform-origin: 50% 100%; }
+.anim-arrive { animation: arrive .7s var(--ressort) both; } /* entrée d'un personnage */
+
+/* Petits dessins de fond ★ ♥ ✿ ✦ */
+.deco { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: var(--deco); }
+.deco span { position: absolute; font-size: 22px; animation: flotte 7s ease-in-out infinite; }
+
+/* Interrupteur « Animations » de l'appli : <html class="calme"> */
+.calme *, .calme *::before, .calme *::after { animation: none !important; transition: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* ==========================================================================
+   Page d'accueil (propre à cette page, avec les jetons de la charte)
+   ========================================================================== */
+.wrap { position: relative; z-index: 1; max-width: 980px; }
+
+/* Petits dessins flottants en fond */
+.deco span:nth-child(1) { top: 7%;  left: 6%;  color: var(--sun); }
+.deco span:nth-child(2) { top: 18%; right: 8%; color: var(--pompon); animation-delay: -2s; }
+.deco span:nth-child(3) { top: 52%; left: 4%;  color: var(--v-lilas); animation-delay: -4s; }
+.deco span:nth-child(4) { top: 70%; right: 5%; color: var(--v-menthe); animation-delay: -1s; }
+.deco span:nth-child(5) { top: 88%; left: 12%; color: var(--v-ciel); animation-delay: -3s; }
+.deco span:nth-child(6) { top: 38%; right: 14%; color: var(--sun); animation-delay: -5s; font-size: 16px; }
+
+/* En-tête : Pompon qui dit bonjour */
+.hello { display: flex; align-items: center; gap: 10px; margin: 6px 0 18px; }
+.mascot { width: 112px; flex: none; }
+.mascot .arm { transform-origin: 128px 98px; animation: coucou 1.3s ease-in-out infinite; }
+.mascot .eyes { animation: cligne 4.5s infinite; transform-origin: 80px 90px; }
+@keyframes coucou { 50% { transform: rotate(-28deg); } }
+@keyframes cligne { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
+.hello .bulle { flex: 1; min-width: 0; padding: 12px 16px 14px; }
+.hello .bulle::before {
+  content: '';
+  position: absolute;
+  left: -13px; top: 42%;
+  width: 20px; height: 20px;
+  background: var(--surface);
+  border-left: var(--bord) solid var(--line);
+  border-bottom: var(--bord) solid var(--line);
+  transform: rotate(45deg);
+  border-radius: 0 0 0 6px;
+}
+h1 .heart { color: var(--pompon); }
+.hello p { margin: 4px 0 0; color: var(--muted); font-weight: 700; }
+
+/* Les cartes des applis */
+.apps { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 600px) { .apps { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 920px) { .apps { grid-template-columns: 1fr 1fr 1fr; } }
+.app {
+  --c: var(--v-lilas);
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 108px;
+  padding: 14px;
+  border: var(--bord) solid var(--line);
+  border-radius: var(--r-carte);
+  background: var(--surface);
+  background: color-mix(in srgb, var(--c) 22%, var(--surface));
+  box-shadow: var(--ombre-carte);
+  color: inherit;
+  text-decoration: none;
+  transition: transform .12s ease, box-shadow .12s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.app:hover { transform: translateY(-2px) rotate(-.6deg); box-shadow: 0 8px 0 var(--line); }
+.app:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--line); }
+.app-icon {
+  width: 74px; height: 74px; flex: none;
+  border-radius: var(--r-btn);
+  border: var(--bord) solid var(--line);
+  background: var(--c);
+  object-fit: cover;
+  display: grid; place-items: center;
+  font-size: 38px;
+  overflow: hidden;
+}
+.app-text { flex: 1; min-width: 0; }
+.app-name { display: block; font-family: var(--display); font-weight: 700; font-size: 1.3rem; line-height: 1.1; }
+.app-desc { margin-top: 4px; color: var(--muted); font-size: .95rem; font-weight: 600;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.app-go {
+  flex: none;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  border: var(--bord) solid var(--line);
+  background: var(--pompon);
+  color: var(--on-pompon);
+  display: grid; place-items: center;
+  font-size: 18px;
+  padding-left: 3px;
+}
+.app .badge-nouveau { position: absolute; top: -12px; right: 18px; }
+
+/* Installer */
+.install {
+  margin-top: 26px;
+  padding: 16px;
+  border: var(--bord) dashed var(--muted);
+  border-radius: var(--r-carte);
+  text-align: center;
+}
+.install .btn { width: auto; margin: 0 auto; }
+.install p { margin: 8px 0 0; color: var(--muted); font-weight: 600; font-size: .95rem; }
+
+footer { margin-top: 22px; text-align: center; color: var(--muted); font-size: .9rem; font-weight: 600; }
+footer .status { display: block; margin-top: 4px; font-size: .8rem; opacity: .85; }
+
+dialog {
+  width: min(440px, calc(100vw - 32px));
+  border: var(--bord) solid var(--line);
+  border-radius: var(--r-carte);
+  background: var(--surface);
+  color: var(--ink);
+  padding: 20px;
+  box-shadow: var(--ombre-carte);
+}
+dialog::backdrop { background: rgba(30, 20, 50, .45); }
+dialog h2 { margin: 0 0 10px; }
+dialog ol { margin: 0 0 16px; padding-left: 1.3em; }
+dialog li { margin: 8px 0; font-weight: 600; }
+dialog li b { white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="deco" aria-hidden="true"><span>★</span><span>♥</span><span>✿</span><span>★</span><span>♥</span><span>✦</span></div>
+
+<div class="wrap">
+  <header class="hello">
+    <svg class="mascot anim-saute" viewBox="0 0 160 160" role="img" aria-label="Pompon, la petite boule qui dit bonjour">
+      <ellipse cx="80" cy="150" rx="46" ry="6" fill="#2B2340" opacity=".15"/>
+      <path d="M80 30 C80 22 82 16 87 11" fill="none" stroke="#2B2340" stroke-width="5" stroke-linecap="round"/>
+      <path d="M87 12 C96 2 111 5 114 12 C106 21 93 21 87 12Z" fill="#8EE3C8" stroke="#2B2340" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M83 17 C73 8 61 11 58 17 C66 25 77 24 83 17Z" fill="#8EE3C8" stroke="#2B2340" stroke-width="4" stroke-linejoin="round"/>
+      <ellipse cx="58" cy="144" rx="14" ry="7" fill="#FFD2E3" stroke="#2B2340" stroke-width="4"/>
+      <ellipse cx="102" cy="144" rx="14" ry="7" fill="#FFD2E3" stroke="#2B2340" stroke-width="4"/>
+      <ellipse cx="24" cy="106" rx="10" ry="13" fill="#FFE4EE" stroke="#2B2340" stroke-width="4"/>
+      <g class="arm"><ellipse cx="140" cy="80" rx="10" ry="14" fill="#FFE4EE" stroke="#2B2340" stroke-width="4" transform="rotate(-20 140 80)"/></g>
+      <path d="M80 30 C118 30 140 60 140 94 C140 126 114 144 80 144 C46 144 20 126 20 94 C20 60 42 30 80 30Z" fill="#FFF0F6" stroke="#2B2340" stroke-width="5"/>
+      <path d="M44 64 C50 52 60 46 70 44" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" opacity=".9"/>
+      <g class="eyes">
+        <ellipse cx="60" cy="90" rx="8" ry="10" fill="#2B2340"/>
+        <ellipse cx="100" cy="90" rx="8" ry="10" fill="#2B2340"/>
+        <circle cx="63" cy="86" r="3.2" fill="#FFFFFF"/>
+        <circle cx="103" cy="86" r="3.2" fill="#FFFFFF"/>
+      </g>
+      <ellipse cx="45" cy="106" rx="10" ry="6" fill="#FF8FB1" opacity=".75"/>
+      <ellipse cx="115" cy="106" rx="10" ry="6" fill="#FF8FB1" opacity=".75"/>
+      <path d="M71 104 Q75.5 111 80 104 Q84.5 111 89 104" fill="none" stroke="#2B2340" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div class="bulle">
+      <h1>Coucou Marc&nbsp;<span class="heart">♥</span></h1>
+      <p>On joue à quoi aujourd'hui&nbsp;?</p>
+    </div>
+  </header>
+
+  <main>
+    <ul class="apps" id="apps" aria-label="Mes applis"></ul>
+
+    <section class="install" id="install" aria-label="Installer">
+      <button class="btn btn-soleil" id="installBtn" type="button">📲 Mettre sur l'écran d'accueil</button>
+      <p>Une seule fois, et toutes les applis s'ouvrent en plein écran, sans la barre de Chrome.</p>
+    </section>
+  </main>
+
+  <footer>
+    Une nouvelle appli apparaît ici toute seule ✨
+    <span class="status" id="status" aria-live="polite"></span>
+  </footer>
+</div>
+
+<dialog id="howto" aria-labelledby="howtoTitle">
+  <h2 id="howtoTitle">Mettre sur l'écran d'accueil</h2>
+  <ol id="howtoSteps"></ol>
+  <button class="btn btn-action" type="button" id="howtoClose">J'ai compris</button>
+</dialog>
+
+<script>
+(function () {
+  'use strict';
+  var OWNER = 'lechampdelaurore-boop';
+  var TOPIC = 'appli-marc'; // nom de la balise <meta> et du sujet GitHub qui ajoutent une appli ici
+  var KEY = 'applis-marc-liste-v1';
+  var NEW_DAYS = 14;
+  var COLORS = ['var(--v-lilas)', 'var(--v-ciel)', 'var(--v-menthe)', 'var(--v-soleil)', 'var(--v-rose)', 'var(--v-peche)'];
+  var EMOJI = ['🌟', '🎈', '🍓', '🐣', '🌈', '🍀'];
+
+  // Liste de secours, utilisée seulement si rien n'a encore pu être chargé.
+  var FALLBACK = [
+    { repo: 'tables-en-cartes', url: '/tables-en-cartes/', name: 'Tables en cartes', description: 'Flashcards pour apprendre les tables de multiplication de 2 à 12.', icon: '/tables-en-cartes/icons/icon.svg', color: '#2F5BFF', created: '2026-10-29T00:00:00Z' },
+    { repo: 'quiz-carte-europe', url: '/quiz-carte-europe/', name: 'Géographie à la carte', description: 'Un jeu pour apprendre la géographie sur une carte : pays, régions, départements, fleuves et continents.', icon: '/quiz-carte-europe/icons/icon.svg', color: '', created: '2026-10-11T00:00:00Z' }
+  ];
+
+  var listEl = document.getElementById('apps');
+  var statusEl = document.getElementById('status');
+
+  function read() {
+    try { var v = JSON.parse(localStorage.getItem(KEY)); return v && Array.isArray(v.apps) ? v : null; } catch (e) { return null; }
+  }
+  function write(apps) {
+    try { localStorage.setItem(KEY, JSON.stringify({ apps: apps, at: Date.now() })); } catch (e) {}
+  }
+
+  function render(apps) {
+    listEl.textContent = '';
+    apps.forEach(function (a, i) {
+      var li = document.createElement('li');
+      var link = document.createElement('a');
+      link.className = 'app anim-apparait';
+      link.href = a.url;
+      link.dataset.repo = a.repo;
+      link.style.setProperty('--c', a.color || COLORS[i % COLORS.length]);
+      link.style.animationDelay = (i * 70) + 'ms';
+
+      var icon;
+      if (a.icon) {
+        icon = document.createElement('img');
+        icon.src = a.icon + (a.icon.indexOf('?') < 0 ? '?hub=1' : '&hub=1');
+        icon.alt = '';
+        icon.width = 74; icon.height = 74;
+        icon.onerror = function () {
+          var s = document.createElement('span');
+          s.className = 'app-icon'; s.textContent = EMOJI[i % EMOJI.length]; s.setAttribute('aria-hidden', 'true');
+          icon.replaceWith(s);
+        };
+      } else {
+        icon = document.createElement('span');
+        icon.textContent = EMOJI[i % EMOJI.length];
+        icon.setAttribute('aria-hidden', 'true');
+      }
+      icon.className = 'app-icon';
+
+      var text = document.createElement('span');
+      text.className = 'app-text';
+      var name = document.createElement('span');
+      name.className = 'app-name'; name.textContent = a.name;
+      var desc = document.createElement('span');
+      desc.className = 'app-desc'; desc.textContent = a.description || '';
+      text.append(name, desc);
+
+      var go = document.createElement('span');
+      go.className = 'app-go'; go.textContent = '▶'; go.setAttribute('aria-hidden', 'true');
+
+      link.append(icon, text, go);
+      if (a.created && Date.now() - Date.parse(a.created) < NEW_DAYS * 864e5) {
+        var b = document.createElement('span');
+        b.className = 'badge-nouveau'; b.textContent = 'Nouveau !';
+        link.appendChild(b);
+      }
+      li.appendChild(link);
+      listEl.appendChild(li);
+    });
+  }
+
+  function timeout(ms) {
+    return new Promise(function (_, no) { setTimeout(function () { no(new Error('timeout')); }, ms); });
+  }
+  function get(url, opts) {
+    return Promise.race([fetch(url, opts), timeout(10000)]).then(function (r) {
+      if (!r.ok) throw new Error(url + ' ' + r.status);
+      return r;
+    });
+  }
+
+  // Une couleur presque blanche ne colore pas la carte : on prend alors une couleur pastel.
+  function tooLight(hex) {
+    var m = /^#?([0-9a-f]{6})$/i.exec(String(hex).trim());
+    if (!m) return true;
+    var n = parseInt(m[1], 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+    return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 > 0.85;
+  }
+
+  function pickIcon(icons) {
+    var best = null, bestSize = 0;
+    icons.forEach(function (ic) {
+      if (!ic || !ic.src || /maskable/.test(ic.purpose || '') && !/any/.test(ic.purpose || '')) return;
+      var size = String(ic.sizes || '').split(' ').reduce(function (m, s) { return Math.max(m, parseInt(s, 10) || 0); }, 0);
+      if (/svg/.test(ic.type || '') || /\.svg$/.test(ic.src)) size = Math.max(size, 150);
+      var score = size >= 144 ? 10000 - size : size; // la plus petite icône assez grande
+      if (!best || score > bestSize) { best = ic; bestSize = score; }
+    });
+    return best;
+  }
+
+  // Lit le nom, le texte, l'icône et la couleur directement dans le site de l'appli.
+  function describe(repo, previous) {
+    var base = '/' + repo.name + '/';
+    var abs = location.origin + base;
+    var a = {
+      repo: repo.name, url: base,
+      name: repo.name.replace(/-/g, ' '),
+      description: repo.description || '',
+      icon: '', color: '',
+      created: repo.created_at
+    };
+    return get(base, { cache: 'no-store' }).then(function (r) { return r.text(); }).then(function (html) {
+      var doc = new DOMParser().parseFromString(html, 'text/html');
+      // Une appli de Marc le dit dans sa page : <meta name="appli-marc" content="oui">
+      // (ou porte le sujet « appli-marc » sur GitHub).
+      if (!doc.querySelector('meta[name="appli-marc"]') && (repo.topics || []).indexOf(TOPIC) < 0) return null;
+      var t = doc.querySelector('title');
+      if (t && t.textContent.trim()) a.name = t.textContent.split(/ [—–|] /)[0].trim();
+      var apple = doc.querySelector('link[rel="apple-touch-icon"]');
+      if (apple) a.icon = new URL(apple.getAttribute('href'), abs).pathname;
+      var ml = doc.querySelector('link[rel="manifest"]');
+      if (!ml) return a;
+      var murl = new URL(ml.getAttribute('href'), abs);
+      return get(murl.href, { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (m) {
+        a.name = m.name || m.short_name || a.name;
+        if (m.description) a.description = m.description;
+        if (m.theme_color && !tooLight(m.theme_color)) a.color = m.theme_color;
+        var ic = pickIcon(m.icons || []);
+        if (ic) a.icon = new URL(ic.src, murl).pathname;
+        return a;
+      }, function () { return a; });
+    }).catch(function () {
+      // Site pas encore en ligne : on garde l'ancienne carte s'il y en avait une.
+      return previous || null;
+    });
+  }
+
+  function refresh(current) {
+    var api = 'https://api.github.com/users/' + OWNER + '/repos?per_page=100&type=owner';
+    return get(api, { headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (repos) {
+        var mine = repos.filter(function (r) {
+          return !r.private && !r.archived && !r.fork && r.has_pages && r.name !== OWNER + '.github.io';
+        });
+        var byRepo = {};
+        (current || []).forEach(function (a) { byRepo[a.repo] = a; });
+        return Promise.all(mine.map(function (r) { return describe(r, byRepo[r.name]); }));
+      })
+      .then(function (apps) {
+        apps = apps.filter(Boolean).sort(function (x, y) { return Date.parse(y.created) - Date.parse(x.created); });
+        if (!apps.length) throw new Error('liste vide');
+        write(apps);
+        render(apps);
+        statusEl.textContent = 'Liste à jour';
+      });
+  }
+
+  var saved = read();
+  var apps = saved ? saved.apps : FALLBACK;
+  render(apps);
+  statusEl.textContent = 'Chargement…';
+  refresh(apps).catch(function () {
+    statusEl.textContent = navigator.onLine === false
+      ? 'Hors ligne : voici la dernière liste enregistrée'
+      : 'Liste enregistrée (pas de connexion à GitHub pour l’instant)';
+  });
+
+  // Installation sur l'écran d'accueil
+  var installBox = document.getElementById('install');
+  var installBtn = document.getElementById('installBtn');
+  var howto = document.getElementById('howto');
+  var deferred = null;
+  var standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+  if (standalone) installBox.hidden = true;
+
+  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferred = e; });
+  window.addEventListener('appinstalled', function () { installBox.hidden = true; });
+
+  function steps() {
+    var ua = navigator.userAgent;
+    var ios = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (ios) return [
+      'Ouvre cette page dans <b>Safari</b>.',
+      'Touche le bouton <b>Partager</b> (le carré avec une flèche vers le haut).',
+      'Choisis <b>« Sur l’écran d’accueil »</b>, puis <b>Ajouter</b>.'
+    ];
+    if (/Android/.test(ua)) return [
+      'Ouvre cette page dans <b>Chrome</b>.',
+      'Touche le menu <b>⋮</b> en haut à droite.',
+      'Choisis <b>« Installer l’application »</b> ou <b>« Ajouter à l’écran d’accueil »</b>.'
+    ];
+    return [
+      'Dans Chrome ou Edge, clique sur l’icône <b>d’installation</b> à droite de l’adresse.',
+      'Ou ouvre le menu <b>⋮</b> et choisis <b>« Installer »</b>.'
+    ];
+  }
+
+  installBtn.addEventListener('click', function () {
+    if (deferred) {
+      deferred.prompt();
+      deferred.userChoice.then(function () { deferred = null; });
+      return;
+    }
+    document.getElementById('howtoSteps').innerHTML = steps().map(function (s) { return '<li>' + s + '</li>'; }).join('');
+    if (howto.showModal) howto.showModal(); else howto.setAttribute('open', '');
+  });
+  document.getElementById('howtoClose').addEventListener('click', function () { howto.close ? howto.close() : howto.removeAttribute('open'); });
+
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+  }
+})();
+</script>
+</body>
+</html>
