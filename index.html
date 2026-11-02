@@ -438,6 +438,11 @@ dialog li b { white-space: nowrap; }
 .avatar[aria-checked="true"] { background: var(--p-soleil); outline: 4px solid var(--sun); outline-offset: 1px; }
 .avatar:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
 .mascot.creature { overflow: visible; }
+/* Compagnon qui fait coucou et cligne des yeux (groupes .bras et .yeux des créatures) */
+.mascot.creature .bras, .avatar[aria-checked="true"] .bras { transform-box: view-box; animation: coucou-bras 2.6s ease-in-out infinite; }
+.mascot.creature .yeux, .avatar[aria-checked="true"] .yeux { transform-box: view-box; animation: cligne-yeux 4s infinite; }
+@keyframes coucou-bras { 0%, 55%, 100% { transform: rotate(0); } 65% { transform: rotate(-22deg); } 75% { transform: rotate(8deg); } 85% { transform: rotate(-18deg); } 93% { transform: rotate(4deg); } }
+@keyframes cligne-yeux { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
 </style>
 </head>
 <body>
@@ -750,6 +755,8 @@ dialog li b { white-space: nowrap; }
       '<g clip-path="url(#' + id + ')" stroke="none"><' + shape + ' fill="' + shade + '"/>' +
       '<g transform="translate(' + -d + ' ' + -d + ')"><' + shape + ' fill="' + base + '"/></g></g><' + shape + ' fill="none"/>';
   }
+  // Bras qui fait coucou : groupe .bras qui tourne autour de l'épaule (ox, oy).
+  function B(s, ox, oy) { return '<g class="bras" style="transform-origin:' + ox + 'px ' + oy + 'px">' + s + '</g>'; }
   function mir(s) { return '<g transform="matrix(-1 0 0 1 100 0)">' + s + '</g>'; }
   function both(s) { return s + mir(s); }
   function hi(x, y, rx, ry, rot) {
@@ -776,7 +783,7 @@ dialog li b { white-space: nowrap; }
   }
   // Visage : o.x, o.y (yeux), o.g (écart), o.r (taille), o.iris, o.happy, o.m (smile|open|cat|none), o.my (bouche)
   function F(o) {
-    var x = o.x || 50, y = o.y, g = o.g || 7, r = o.r || 3.6, s = '<g stroke="none">';
+    var x = o.x || 50, y = o.y, g = o.g || 7, r = o.r || 3.6, Y = '<g class="yeux" style="transform-origin:' + x + 'px ' + y + 'px">', s = '<g stroke="none">' + Y;
     [x - g, x + g].forEach(function (ex) {
       if (o.happy) return;
       s += '<ellipse cx="' + ex + '" cy="' + y + '" rx="' + r + '" ry="' + (r * 1.2).toFixed(2) + '" fill="' + INK + '"/>';
@@ -784,15 +791,18 @@ dialog li b { white-space: nowrap; }
       s += '<circle cx="' + (ex - r * 0.35).toFixed(2) + '" cy="' + (y - r * 0.45).toFixed(2) + '" r="' + (r * 0.42).toFixed(2) + '" fill="#fff"/>' +
         '<circle cx="' + (ex + r * 0.4).toFixed(2) + '" cy="' + (y + r * 0.3).toFixed(2) + '" r="' + (r * 0.18).toFixed(2) + '" fill="#fff"/>';
     });
+    s += '</g>';
     if (o.blush !== false) {
       var by = o.by || y + r + 2.5, bg = o.bg || g + r + 1.5;
       s += '<ellipse cx="' + (x - bg) + '" cy="' + by + '" rx="' + (r * 1.05).toFixed(2) + '" ry="' + (r * 0.62).toFixed(2) + '" fill="#FF8FA8" opacity=".75"/>' +
         '<ellipse cx="' + (x + bg) + '" cy="' + by + '" rx="' + (r * 1.05).toFixed(2) + '" ry="' + (r * 0.62).toFixed(2) + '" fill="#FF8FA8" opacity=".75"/>';
     }
     s += '</g>';
+    if (o.happy) s += Y;
     if (o.happy) [x - g, x + g].forEach(function (ex) {
       s += '<path d="M' + (ex - r) + ' ' + (y + r * 0.4) + 'q' + r + ' ' + (-r * 1.8) + ' ' + 2 * r + ' 0" fill="none" stroke-width="2.2"/>';
     });
+    if (o.happy) s += '</g>';
     var my = o.my || y + r + 3.5, w = o.w || r;
     if (o.m === 'open') s += '<path d="M' + (x - w) + ' ' + my + 'Q' + x + ' ' + (my + w * 2) + ' ' + (x + w) + ' ' + my + 'z" fill="#8A2D45" stroke-width="1.8"/>' +
       '<ellipse cx="' + x + '" cy="' + (my + w * 0.6) + '" rx="' + w * 0.45 + '" ry="' + w * 0.28 + '" fill="#FF8FA8" stroke="none"/>';
@@ -824,7 +834,7 @@ dialog li b { white-space: nowrap; }
       S('ellipse cx="50" cy="71" rx="13" ry="11"', '#FFE3B8', '#F5C98E', 2) +
       '<path d="M41 67h18M39 72h22M41 77h18" fill="none" stroke="#E2A866" stroke-width="1.5"/>' +
       both('<path d="M37 45q-7-6-5-15q7 4 10 12z" fill="#FFE3B8"/>') +
-      S('ellipse cx="35" cy="70" rx="4" ry="5"', '#F2603C', '#CF4128', 1) + S('ellipse cx="65" cy="70" rx="4" ry="5"', '#F2603C', '#CF4128', 1) +
+      S('ellipse cx="35" cy="70" rx="4" ry="5"', '#F2603C', '#CF4128', 1) + B(S('ellipse cx="65" cy="70" rx="4" ry="5"', '#F2603C', '#CF4128', 1), 63, 66) +
       hi(39, 50, 4, 2.5, -35) + F({ y: 56, g: 9, r: 4.4, iris: '#FFB13C', m: 'open', my: 63, w: 3.6 }) +
       '<path d="M53.5 63l1.5 3l1.5-3" fill="#fff" stroke-width="1.2"/>' + star(16, 26, 4) + star(80, 34, 3)],
 
@@ -837,7 +847,7 @@ dialog li b { white-space: nowrap; }
       S('ellipse cx="50" cy="71" rx="13" ry="11"', '#F0FAFF', '#CDEBFA', 2) +
       '<path d="M50 64v13M44 67l12 7M56 67l-12 7" fill="none" stroke="#9ED8F5" stroke-width="1.6"/>' +
       '<path d="M40 43l-2-13l7 9z" fill="#E8F7FF"/><path d="M46 41l4-15l4 15z" fill="#fff"/><path d="M60 43l2-13l-7 9z" fill="#E8F7FF"/>' +
-      S('ellipse cx="35" cy="70" rx="4" ry="5"', '#9ED8F5', '#6DB6E2', 1) + S('ellipse cx="65" cy="70" rx="4" ry="5"', '#9ED8F5', '#6DB6E2', 1) +
+      S('ellipse cx="35" cy="70" rx="4" ry="5"', '#9ED8F5', '#6DB6E2', 1) + B(S('ellipse cx="65" cy="70" rx="4" ry="5"', '#9ED8F5', '#6DB6E2', 1), 63, 66) +
       hi(39, 50, 4, 2.5, -35) + F({ y: 56, g: 9, r: 4.4, iris: '#4A8FE0', m: 'cat', my: 63, w: 3 }) +
       star(18, 24, 3.5, '#fff') + star(84, 30, 4, '#fff') + star(12, 64, 2.5, '#fff')],
 
@@ -853,9 +863,9 @@ dialog li b { white-space: nowrap; }
         '<g stroke-width="1.6"><circle cx="38" cy="28" r="4" fill="#FFD84D"/><circle cx="50" cy="24" r="4.5" fill="#FF6F91"/><circle cx="62" cy="28" r="4" fill="#B79CFF"/></g>' +
         '<g fill="#fff" stroke="none"><circle cx="50" cy="24" r="1.6"/><circle cx="38" cy="28" r="1.3"/><circle cx="62" cy="28" r="1.3"/></g>',
       face: { y: 47, g: 7, r: 3.6, iris: '#7A4A2A' },
-      front: hand(33, 74) + hand(67, 74) +
+      front: hand(33, 74) + B(hand(67, 74) +
         '<g transform="translate(7 10)"><path d="M62 64Q66 56 72 52" fill="none" stroke="#5FAE55" stroke-width="2"/><path d="M66 58q6-3 8 2q-6 3-8-2z" fill="#8CCB6A" stroke-width="1.4"/>' +
-        '<path d="M66 50q0-8 6-10q6 2 6 10q-3 4-6 2q-3 2-6-2z" fill="#FF6F91"/><path d="M69 42l3 6l3-6" fill="none" stroke-width="1.3"/></g>'
+        '<path d="M66 50q0-8 6-10q6 2 6 10q-3 4-6 2q-3 2-6-2z" fill="#FF6F91"/><path d="M69 42l3 6l3-6" fill="none" stroke-width="1.3"/></g>', 62, 72)
     })],
 
     // 4. Fée des étoiles
@@ -870,13 +880,13 @@ dialog li b { white-space: nowrap; }
         '<path d="M60 24a7 7 0 1 0 6 10a5.5 5.5 0 1 1-6-10z" fill="#FFE066" stroke-width="1.6"/>',
       face: { y: 47, g: 7, r: 3.6, iris: '#8C7AE6', m: 'open', w: 3 },
       front: hand(33, 74) +
-        '<path d="M66 74L80 50" fill="none" stroke="#FFF1B8" stroke-width="2.5"/>' + star(81, 46, 8, '#FFC93C') + hand(67, 74) +
+        B('<path d="M66 74L80 50" fill="none" stroke="#FFF1B8" stroke-width="2.5"/>' + star(81, 46, 8, '#FFC93C') + hand(67, 74), 62, 72) +
         star(88, 64, 2.5, '#FFE066') + star(74, 34, 2, '#FFE066') + star(14, 54, 2.5, '#FFE066')
     })],
 
     // 5. Luciole feu follet
     ['Lumio', '<circle cx="50" cy="56" r="34" fill="#FFF3B0" stroke="none" opacity=".45"/><circle cx="50" cy="56" r="27" fill="#FFF3B0" stroke="none" opacity=".6"/>' +
-      '<g fill="#E8F7FF" opacity=".9"><ellipse cx="31" cy="40" rx="13" ry="7" transform="rotate(-35 31 40)"/><ellipse cx="69" cy="40" rx="13" ry="7" transform="rotate(35 69 40)"/>' +
+      '<g fill="#E8F7FF" opacity=".9"><ellipse cx="31" cy="40" rx="13" ry="7" transform="rotate(-35 31 40)"/><g class="bras" style="transform-origin:58px 48px"><ellipse cx="69" cy="40" rx="13" ry="7" transform="rotate(35 69 40)"/></g>' +
       '<ellipse cx="30" cy="54" rx="9" ry="5" transform="rotate(15 30 54)"/><ellipse cx="70" cy="54" rx="9" ry="5" transform="rotate(-15 70 54)"/></g>' +
       '<path d="M44 38q-4-12-12-13M56 38q4-12 12-13" fill="none" stroke-width="2"/>' + star(31, 24, 4.5, '#FFE066') + star(69, 24, 4.5, '#FFE066') +
       S('ellipse cx="50" cy="73" rx="14" ry="12"', '#FFE066', '#FFC93C', 2) + '<path d="M38 72q12 5 24 0M39 78q11 4 22 0" fill="none" stroke="#F5A623" stroke-width="1.5"/>' +
@@ -893,13 +903,14 @@ dialog li b { white-space: nowrap; }
       '<rect x="66" y="56" width="4" height="7" rx="2" fill="#FFF1DC" stroke-width="1.5"/><path d="M62 57q6-9 12 0z" fill="#F25C54" stroke-width="1.6"/>' +
       
       '<g fill="#fff" stroke="none"><circle cx="66" cy="54.5" r="1"/><circle cx="70" cy="55.5" r=".9"/></g>' +
-      F({ y: 61, g: 8, r: 4.4, iris: '#3E7A3A', m: 'cat', w: 3 })],
+      F({ y: 61, g: 8, r: 4.4, iris: '#3E7A3A', m: 'cat', w: 3 }) +
+      B(S('ellipse cx="74" cy="70" rx="4.5" ry="5.5"', '#7CC46A', '#5BA650', 1), 70, 74)],
 
     // 7. Champignon
     ['Champi', ground(22) + '<path d="M28 90q2-8 5-1q2-7 4 1M64 90q2-8 4-1q3-7 5 1" fill="none" stroke="#5FAE55" stroke-width="2"/>' +
       '<ellipse cx="43" cy="87" rx="5" ry="3.5" fill="#C98A4B"/><ellipse cx="57" cy="87" rx="5" ry="3.5" fill="#C98A4B"/>' +
       S('path d="M36 56q-2 30 14 30q16 0 14-30z"', '#FFF1DC', '#EBD2B0', 2.5) +
-      hand(35, 74, '#FFF1DC', '#EBD2B0') + hand(65, 74, '#FFF1DC', '#EBD2B0') +
+      hand(35, 74, '#FFF1DC', '#EBD2B0') + B(hand(65, 74, '#FFF1DC', '#EBD2B0'), 62, 70) +
       S('path d="M30 56q20 7 40 0q-4 5-20 7q-16-2-20-7z"', '#F6DFC0', '#E6C79E', 1) +
       '<path d="M38 58l2 3M44 59l1 3.5M50 59.5v3.5M56 59l-1 3.5M62 58l-2 3" fill="none" stroke="#D1AE80" stroke-width="1.2"/>' +
       S('path d="M22 56q0-32 28-32q28 0 28 32q-28 7-56 0z"', '#F25C54', '#D23F3F') +
@@ -912,10 +923,11 @@ dialog li b { white-space: nowrap; }
       '<g fill="#8FD3F4" stroke-width="1.5"><path d="M34 82q-3 4 0 6q3-2 0-6z"/><path d="M50 86q-3 4 0 6q3-2 0-6z"/></g>' +
       '<path d="M66 80l-4 6h4l-3 6" fill="none" stroke="#FFC93C" stroke-width="3"/><path d="M66 80l-4 6h4l-3 6" fill="none" stroke-width="1" opacity=".6"/>' +
       S('path d="M28 78a12 12 0 0 1 2-22a15 15 0 0 1 22-10a14 14 0 0 1 22 8a12 12 0 0 1-2 24z"', '#FFFFFF', '#DCE6F5') +
-      hi(40, 54, 4, 2, -25) + F({ y: 64, g: 8, r: 4, iris: '#8FD3F4', m: 'cat', w: 3 })],
+      hi(40, 54, 4, 2, -25) + F({ y: 64, g: 8, r: 4, iris: '#8FD3F4', m: 'cat', w: 3 }) +
+      B(S('circle cx="76" cy="73" r="4.5"', '#FFFFFF', '#DCE6F5', 1), 72, 74)],
 
     // 9. Licorne
-    ['Licorneau', ground(22) + '<path d="M70 72q18-2 14 14q-2-6-8-6q4-6-6-8z" fill="#B79CFF"/>' +
+    ['Licorneau', ground(22) + B('<path d="M70 72q18-2 14 14q-2-6-8-6q4-6-6-8z" fill="#B79CFF"/>', 68, 74) +
       S('ellipse cx="41" cy="85" rx="6.5" ry="4.5"', '#fff', '#E3DCF5', 1.5) + S('ellipse cx="59" cy="85" rx="6.5" ry="4.5"', '#fff', '#E3DCF5', 1.5) +
       '<path d="M36 87h10M54 87h10" fill="none" stroke="#B79CFF" stroke-width="2.5" stroke-linecap="butt"/>' +
       S('ellipse cx="50" cy="73" rx="17" ry="13"', '#fff', '#E3DCF5') +
@@ -941,12 +953,12 @@ dialog li b { white-space: nowrap; }
       '<path d="M47 58l3 4.5l3-4.5z" fill="#FFC93C" stroke-width="1.5"/>' +
       '<path d="M34 78l16 4l16-4v-9l-16 4l-16-4z" fill="#E8455A"/><path d="M50 73v9" fill="none" stroke-width="1.6"/>' +
       '<path d="M36 72l12 3M52 75l12-3" fill="none" stroke="#fff" stroke-width="1.3"/>' +
-      S('ellipse cx="30" cy="68" rx="6" ry="11"', '#7564CF', '#5A49B5', 1.5) + S('ellipse cx="70" cy="68" rx="6" ry="11"', '#7564CF', '#5A49B5', 1.5)],
+      S('ellipse cx="30" cy="68" rx="6" ry="11"', '#7564CF', '#5A49B5', 1.5) + B(S('ellipse cx="70" cy="68" rx="6" ry="11"', '#7564CF', '#5A49B5', 1.5), 68, 60)],
 
     // 11. Golem de pierre
     ['Galet', ground(26) + S('rect x="36" y="80" width="11" height="8" rx="4"', '#A8A3B8', '#8A849C', 1.5) + S('rect x="53" y="80" width="11" height="8" rx="4"', '#A8A3B8', '#8A849C', 1.5) +
       S('rect x="28" y="38" width="44" height="45" rx="16"', '#BDB8CC', '#9C96AE') +
-      S('rect x="16" y="56" width="12" height="20" rx="6"', '#A8A3B8', '#8A849C', 1.5) + S('rect x="72" y="56" width="12" height="20" rx="6"', '#A8A3B8', '#8A849C', 1.5) +
+      S('rect x="16" y="56" width="12" height="20" rx="6"', '#A8A3B8', '#8A849C', 1.5) + B(S('rect x="72" y="56" width="12" height="20" rx="6"', '#A8A3B8', '#8A849C', 1.5), 74, 60) +
       '<path d="M30 50q2-14 20-12q18-2 20 12q-6-4-10 0q-4-5-10-1q-6-4-10 1q-4-4-10 0z" fill="#7CC46A"/>' +
       '<g stroke-width="1.5"><circle cx="58" cy="37" r="3" fill="#FF9EC4"/><circle cx="64" cy="40" r="2.4" fill="#FFE066"/></g>' +
       '<path d="M64 62l3 5l-2 4M33 70l4 2" fill="none" stroke-width="1.6"/>' +
@@ -957,7 +969,7 @@ dialog li b { white-space: nowrap; }
     ['Grifon', ground(24) + '<path d="M66 76q18 2 14-14" fill="none" stroke-width="3"/><path d="M80 63q-6-6 0-11q6 5 0 11z" fill="#C98A4B"/>' +
       S('ellipse cx="50" cy="70" rx="20" ry="16"', '#F5C46B', '#DDA448') +
       '<g fill="#FFC93C" stroke-width="1.6"><path d="M37 82l-2 6h4l1-2l1 2h4l-1-6zM55 82l-1 6h4l1-2l1 2h4l-2-6z"/></g>' +
-      both('<path d="M38 68Q18 66 12 38Q19 44 23 42Q23 49 28 49Q27 55 33 56Q33 61 38 60z" fill="#FFF8EE"/><path d="M36 64Q24 58 19 46M36 62Q28 56 26 50" fill="none" stroke="#C9B8A0" stroke-width="1.3"/>') +
+      ('<path d="M38 68Q18 66 12 38Q19 44 23 42Q23 49 28 49Q27 55 33 56Q33 61 38 60z" fill="#FFF8EE"/><path d="M36 64Q24 58 19 46M36 62Q28 56 26 50" fill="none" stroke="#C9B8A0" stroke-width="1.3"/>') + B(mir('<path d="M38 68Q18 66 12 38Q19 44 23 42Q23 49 28 49Q27 55 33 56Q33 61 38 60z" fill="#FFF8EE"/><path d="M36 64Q24 58 19 46M36 62Q28 56 26 50" fill="none" stroke="#C9B8A0" stroke-width="1.3"/>'), 63, 64) +
       '<path d="M41 30l3-10l4 8l2-10l3 10l4-8l1 10" fill="#FFF8EE"/>' +
       S('circle cx="50" cy="46" r="17"', '#FFF8EE', '#E8DCC8') +
       '<path d="M35 46q15 6 30 0" fill="none" stroke="#E8DCC8" stroke-width="1.4"/>' +
@@ -967,7 +979,7 @@ dialog li b { white-space: nowrap; }
     // 13. Phénix
     ['Phénixou', '<path d="M44 72q-14 6-18 18q12-2 20-14zM56 72q14 6 18 18q-12-2-20-14z" fill="#FF5470"/><path d="M50 72q-8 12 0 24q8-12 0-24z" fill="#FFC93C"/><path d="M50 80q-3 5 0 10q3-5 0-10z" fill="#FF7A45" stroke="none"/>' +
       '<path d="M50 39q-6-14 0-22q6 8 0 22zM44 41q-10-8-8-16q8 4 8 16zM56 41q10-8 8-16q-8 4-8 16z" fill="#FFC93C"/><path d="M50 36q-2-6 0-11q2 5 0 11z" fill="#FF7A45" stroke="none"/>' +
-      both('<path d="M33 56Q12 40 8 58Q16 56 18 62Q22 58 26 63Q30 58 34 62z" fill="#FFB347"/><path d="M32 58Q20 54 16 66Q22 64 26 68z" fill="#FF7A45"/>') +
+      ('<path d="M33 56Q12 40 8 58Q16 56 18 62Q22 58 26 63Q30 58 34 62z" fill="#FFB347"/><path d="M32 58Q20 54 16 66Q22 64 26 68z" fill="#FF7A45"/>') + B(mir('<path d="M33 56Q12 40 8 58Q16 56 18 62Q22 58 26 63Q30 58 34 62z" fill="#FFB347"/><path d="M32 58Q20 54 16 66Q22 64 26 68z" fill="#FF7A45"/>'), 66, 59) +
       S('circle cx="50" cy="58" r="19"', '#FF7A45', '#E65A30') + S('ellipse cx="50" cy="67" rx="10" ry="8"', '#FFD9A8', '#F5BD7E', 1.5) +
       hi(42, 48, 3.5, 2, -35) + F({ y: 54, g: 7, r: 4, iris: '#FFE066', m: 'none' }) +
       '<path d="M47 60l3 4.5l3-4.5z" fill="#FFC93C" stroke-width="1.5"/>' +
@@ -981,11 +993,11 @@ dialog li b { white-space: nowrap; }
       '<rect x="27" y="47" width="46" height="9" fill="#4A2033"/>' +
       '<path d="M31 47l3 5l3-5zM40 47l2.5 4l2.5-4zM55 47l2.5 4l2.5-4zM63 47l3 5l3-5zM36 56l2.5-4l2.5 4zM59 56l2.5-4l2.5 4z" fill="#fff" stroke-width="1.2"/>' +
       '<path d="M44 53q6-6 12 0q1 6-6 10q-7-4-6-10z" fill="#FF8FA8" stroke-width="1.8"/><path d="M50 53v5" fill="none" stroke="#E86A88" stroke-width="1.3"/>' +
-      S('path d="M24 47q0-21 26-21q26 0 26 21z"', '#C98A4B', '#A86E36') +
+      '<g class="bras" style="transform-origin:24px 47px">' + S('path d="M24 47q0-21 26-21q26 0 26 21z"', '#C98A4B', '#A86E36') +
       '<path d="M33 28v19M67 28v19" fill="none" stroke="#8E95A8" stroke-width="5" stroke-linecap="butt"/><path d="M30.5 29v18M35.5 27v20M64.5 27v20M69.5 29v18" fill="none" stroke-width="1.6"/>' +
       '<path d="M24 47h52" fill="none"/>' +
       '<rect x="44" y="62" width="12" height="13" rx="3" fill="#FFC93C"/><path d="M50 66v4" fill="none" stroke-width="2.2"/>' +
-      hi(40, 33, 4, 2, -15) + F({ y: 37, g: 9, r: 3.8, iris: '#FFC93C', m: 'none', by: 43, bg: 15 })],
+      hi(40, 33, 4, 2, -15) + F({ y: 37, g: 9, r: 3.8, iris: '#FFC93C', m: 'none', by: 43, bg: 15 }) + '</g>'],
 
     // 15. Goutte d'eau
     ['Bulline', '<ellipse cx="50" cy="88" rx="26" ry="5" fill="#BDE6FF"/><path d="M30 88q10 3 20 0q10 3 20 0" fill="none" stroke="#6EC6FF" stroke-width="1.4"/>' +
@@ -995,7 +1007,8 @@ dialog li b { white-space: nowrap; }
       '<g fill="#B5E3FF" stroke="none" opacity=".8"><circle cx="64" cy="76" r="3"/><circle cx="60" cy="82" r="1.8"/><circle cx="36" cy="80" r="2"/></g>' +
       '<ellipse cx="38" cy="54" rx="4" ry="8" fill="#fff" opacity=".65" stroke="none" transform="rotate(25 38 54)"/><circle cx="43" cy="43" r="2" fill="#fff" opacity=".8" stroke="none"/>' +
       '<path d="M50 22q-6-7 1-11q5 4-1 11z" fill="#8CCB6A" stroke-width="1.6"/>' +
-      F({ y: 64, g: 8, r: 4.5, iris: '#BDE6FF', m: 'open', w: 3 })],
+      F({ y: 64, g: 8, r: 4.5, iris: '#BDE6FF', m: 'open', w: 3 }) +
+      B(S('ellipse cx="76" cy="66" rx="4" ry="5"', '#6EC6FF', '#3FA2E8', 1), 72, 70)],
 
     // ---------- Nouveaux héros ----------
     // 16. Chevalier
@@ -1009,8 +1022,8 @@ dialog li b { white-space: nowrap; }
         S('rect x="36" y="38" width="28" height="21" rx="10"', SKIN, SKIN2, 2) +
         '<g fill="#F0F4F9" stroke-width="1.3"><circle cx="33.5" cy="52" r="1.6"/><circle cx="66.5" cy="52" r="1.6"/></g>' + hi(38, 31, 3.5, 2, -40),
       face: { y: 47, g: 6.5, r: 3.4, iris: '#4F7DF0', m: 'smile', w: 2.6, by: 53, bg: 10.5 },
-      front: '<g transform="rotate(18 69 74)"><path d="M66.5 70v-26l2.5-5l2.5 5v26z" fill="#F0F4F9"/><path d="M69 42v26" fill="none" stroke="#C9D3E0" stroke-width="1.2"/>' +
-        '<rect x="61" y="68" width="16" height="4.5" rx="2.2" fill="#FFC93C"/><rect x="67" y="72" width="4" height="8" rx="1.5" fill="#8A5A3C"/></g>' + hand(68, 76) +
+      front: B('<g transform="rotate(18 69 74)"><path d="M66.5 70v-26l2.5-5l2.5 5v26z" fill="#F0F4F9"/><path d="M69 42v26" fill="none" stroke="#C9D3E0" stroke-width="1.2"/>' +
+        '<rect x="61" y="68" width="16" height="4.5" rx="2.2" fill="#FFC93C"/><rect x="67" y="72" width="4" height="8" rx="1.5" fill="#8A5A3C"/></g>' + hand(68, 76), 63, 74) +
         S('path d="M20 62h22v9q0 11-11 16q-11-5-11-16z"', '#E8455A', '#C7334A', 2) +
         star(31, 72, 7, '#FFE066') + hi(25, 66, 2, 1.2)
     })],
@@ -1028,7 +1041,7 @@ dialog li b { white-space: nowrap; }
         '<path d="M34 30q16 5 32 0l1.5 4q-17.5 5.5-35 0z" fill="#FFC93C" stroke-width="1.8"/>' +
         S('ellipse cx="50" cy="34" rx="25" ry="5.5"', '#7B5CE0', '#5E43C0', 1) + star(46, 20, 3, '#FFE066') + star(56, 12, 2, '#FFE066'),
       face: { y: 45, g: 7, r: 3.4, iris: '#7B5CE0', m: 'none', by: 50, bg: 11 },
-      front: hand(33, 73) + hand(72, 66)
+      front: hand(33, 73) + B(hand(72, 66), 65, 70)
     })],
 
     // 18. Elfe archère
@@ -1043,7 +1056,7 @@ dialog li b { white-space: nowrap; }
       head: '<path d="M32 42q2-16 18-17q16 1 18 17q-5-6-9-6q-3 4-9 4q-6 0-9-4q-4 0-9 6z" fill="#FFD46B"/>' +
         '<path d="M29 44q0-26 21-26q21 0 21 26q-4-13-21-14q-17 1-21 14z" fill="#4CAF6A"/><path d="M50 18q-1-6 4-9" fill="none" stroke="#378A52" stroke-width="2"/>',
       face: { y: 47, g: 7, r: 3.6, iris: '#4CAF6A', m: 'smile', w: 2.6 },
-      front: hand(29, 72) + hand(67, 74)
+      front: hand(29, 72) + B(hand(67, 74), 62, 72)
     })],
 
     // 19. Nain
@@ -1061,7 +1074,7 @@ dialog li b { white-space: nowrap; }
         S('path d="M30 40q0-19 20-19q20 0 20 19z"', '#C9D3E0', '#9AA8BC', 2) +
         '<rect x="29" y="37" width="42" height="6" rx="2" fill="#FFC93C" stroke-width="1.8"/><path d="M50 22v15" fill="none" stroke="#9AA8BC" stroke-width="1.5"/>' + hi(39, 29, 3, 1.6, -30),
       face: { y: 46, g: 7.5, r: 3.4, iris: '#8A5A3C', m: 'none', by: 51, bg: 11 },
-      front: hand(33, 73) + hand(71, 70)
+      front: hand(33, 73) + B(hand(71, 70), 65, 72)
     })],
 
     // 20. Sorcière
@@ -1078,7 +1091,7 @@ dialog li b { white-space: nowrap; }
         '<rect x="25" y="56" width="6" height="7" rx="1.5" fill="#E3F6FF"/><rect x="24" y="53" width="8" height="4" rx="1.5" fill="#A8723C" stroke-width="1.6"/>' +
         S('circle cx="28" cy="70" r="8"', '#E3F6FF', '#C3E6F5', 1.5) +
         '<path d="M20.5 71q7.5 3 15 0a7.5 7.5 0 0 1-15 0z" fill="#7CE07C" stroke="none"/><path d="M20 70a8 8 0 0 0 16 0" fill="none" stroke-width="2.2"/>' + hi(25, 67, 1.6, 2.5) +
-        hand(34, 76) + hand(67, 74) + star(84, 56, 3, '#FFE066') + star(78, 40, 2, '#B79CFF')
+        hand(34, 76) + B(hand(67, 74), 62, 72) + star(84, 56, 3, '#FFE066') + star(78, 40, 2, '#B79CFF')
     })],
 
     // 21. Fantôme
@@ -1086,10 +1099,10 @@ dialog li b { white-space: nowrap; }
       S('path d="M26 54q0-30 24-30q24 0 24 30v24q-4 7-8 0q-4-6-8 0q-4 7-8 0q-4-6-8 0q-4 7-8 0q-4-6-8 0z"', '#FFFFFF', '#DCD8F0') +
       hi(36, 38, 4.5, 2.5, -40) +
       S('ellipse cx="26" cy="62" rx="5" ry="7" transform="rotate(30 26 62)"', '#FFFFFF', '#DCD8F0', 1.5) +
-      '<rect x="68" y="58" width="7" height="12" rx="1.5" fill="#FFF1B8"/><path d="M71.5 58v-3" fill="none" stroke-width="1.5"/>' +
+      B('<rect x="68" y="58" width="7" height="12" rx="1.5" fill="#FFF1B8"/><path d="M71.5 58v-3" fill="none" stroke-width="1.5"/>' +
       '<circle cx="71.5" cy="50" r="7" fill="#FFF3B0" opacity=".6" stroke="none"/><path d="M71.5 55q-4-3 0-8q4 5 0 8z" fill="#FFB13C" stroke-width="1.5"/>' +
       '<path d="M64 70h15q0 4-7.5 4q-7.5 0-7.5-4z" fill="#C9D3E0"/>' +
-      S('ellipse cx="73" cy="66" rx="5" ry="6.5" transform="rotate(-30 73 66)"', '#FFFFFF', '#DCD8F0', 1.5) +
+      S('ellipse cx="73" cy="66" rx="5" ry="6.5" transform="rotate(-30 73 66)"', '#FFFFFF', '#DCD8F0', 1.5), 68, 70) +
       F({ y: 50, g: 8, r: 4.6, iris: '#B79CFF', m: 'open', w: 3.2 }) + star(16, 30, 3, '#B79CFF') + star(86, 28, 2.5, '#B79CFF')],
 
     // 22. Bébé dragon dans son œuf
@@ -1102,7 +1115,7 @@ dialog li b { white-space: nowrap; }
       S('path d="M24 62l6 5l5-6l5 6l5-6l5 6l5-6l5 6l5-6l5 6l6-5q2 28-26 28q-28 0-26-28z"', '#FFF8EC', '#EBD5B5') +
       '<g stroke="none" fill="#B8E6A0"><circle cx="34" cy="76" r="3"/><circle cx="62" cy="80" r="3.5"/><circle cx="54" cy="72" r="2"/><circle cx="42" cy="84" r="2"/></g>' +
       '<path d="M66 70l3 3l-1 4" fill="none" stroke-width="1.4"/>' +
-      S('ellipse cx="32" cy="64" rx="5" ry="4"', '#7CCB6A', '#5AAE4C', 1) + S('ellipse cx="68" cy="64" rx="5" ry="4"', '#7CCB6A', '#5AAE4C', 1) +
+      S('ellipse cx="32" cy="64" rx="5" ry="4"', '#7CCB6A', '#5AAE4C', 1) + B(S('ellipse cx="68" cy="64" rx="5" ry="4"', '#7CCB6A', '#5AAE4C', 1), 64, 64) +
       star(84, 30, 3) + star(16, 70, 2.5)],
 
     // 23. Hydre à trois têtes
@@ -1113,16 +1126,17 @@ dialog li b { white-space: nowrap; }
       S('ellipse cx="50" cy="76" rx="18" ry="12"', '#5FD0C0', '#3FB0A0') + S('ellipse cx="50" cy="79" rx="10" ry="7"', '#FFF1C8', '#F2D9A0', 1.5) +
       '<path d="M43 77h14M44 81h12" fill="none" stroke="#E2C27A" stroke-width="1.3"/>' +
       '<path d="M18 40l3 5l-5 1z M82 40l-3 5l5 1z" fill="#FFC93C" stroke-width="1.5"/>' +
-      S('circle cx="25" cy="48" r="10"', '#5FD0C0', '#3FB0A0', 2) + S('circle cx="75" cy="48" r="10"', '#5FD0C0', '#3FB0A0', 2) +
+      S('circle cx="25" cy="48" r="10"', '#5FD0C0', '#3FB0A0', 2) +
       '<path d="M44 24l2-8l4 5l4-5l2 8" fill="#FFC93C" stroke-width="1.6"/>' +
       S('circle cx="50" cy="35" r="12"', '#5FD0C0', '#3FB0A0', 2) +
       F({ x: 50, y: 34, g: 5, r: 2.9, iris: '#FFE066', m: 'open', w: 2.4, my: 40 }) +
       F({ x: 25, y: 47, g: 4.2, r: 2.3, happy: true, m: 'smile', w: 2, my: 52 }) +
-      F({ x: 75, y: 47, g: 4.2, r: 2.4, iris: '#FFE066', m: 'cat', w: 1.8, my: 52 })],
+      B(S('circle cx="75" cy="48" r="10"', '#5FD0C0', '#3FB0A0', 2) +
+        F({ x: 75, y: 47, g: 4.2, r: 2.4, iris: '#FFE066', m: 'cat', w: 1.8, my: 52 }), 70, 56)],
 
     // 24. Renard aux trois queues
     ['Renardeau', ground(22) +
-      '<g transform="rotate(8 58 80)">' + S('path d="M56 78q-6-26 6-36q8 16-6 36z"', '#F59A3C', '#D97A22', 1.5) + '<path d="M58.6 49q2.4-4 3.4-7q5 7 2 14q-2-5-5.4-7z" fill="#fff"/></g>' +
+      B('<g transform="rotate(8 58 80)">' + S('path d="M56 78q-6-26 6-36q8 16-6 36z"', '#F59A3C', '#D97A22', 1.5) + '<path d="M58.6 49q2.4-4 3.4-7q5 7 2 14q-2-5-5.4-7z" fill="#fff"/></g>', 58, 80) +
       '<g transform="rotate(38 58 80)">' + S('path d="M56 78q-6-26 6-36q8 16-6 36z"', '#F59A3C', '#D97A22', 1.5) + '<path d="M58.6 49q2.4-4 3.4-7q5 7 2 14q-2-5-5.4-7z" fill="#fff"/></g>' +
       '<g transform="rotate(68 58 80)">' + S('path d="M56 78q-6-26 6-36q8 16-6 36z"', '#F59A3C', '#D97A22', 1.5) + '<path d="M58.6 49q2.4-4 3.4-7q5 7 2 14q-2-5-5.4-7z" fill="#fff"/></g>' +
       S('path d="M36 88q-4-24 14-26q18 2 14 26z"', '#F59A3C', '#D97A22') +
@@ -1137,7 +1151,7 @@ dialog li b { white-space: nowrap; }
 
     // 25. Petit kraken
     ['Krakou', '<ellipse cx="50" cy="91" rx="26" ry="3" fill="' + INK + '" opacity=".12" stroke="none"/>' +
-      tube('M34 62Q20 74 26 84Q30 88 33 84', '#A77BE8', 6) + tube('M66 62Q80 74 74 84Q70 88 67 84', '#A77BE8', 6) +
+      tube('M34 62Q20 74 26 84Q30 88 33 84', '#A77BE8', 6) + B(tube('M66 62Q80 74 74 84Q70 88 67 84', '#A77BE8', 6), 66, 62) +
       tube('M42 66Q34 80 40 88Q44 90 45 86', '#A77BE8', 6) + tube('M58 66Q66 80 60 88Q56 90 55 86', '#A77BE8', 6) +
       '<g fill="#E9D9FF" stroke="none"><circle cx="24" cy="76" r="1.3"/><circle cx="76" cy="76" r="1.3"/><circle cx="37" cy="78" r="1.3"/><circle cx="63" cy="78" r="1.3"/></g>' +
       S('path d="M26 60q0-34 24-34q24 0 24 34q0 8-24 8q-24 0-24-8z"', '#A77BE8', '#8559CC') +
@@ -1153,7 +1167,7 @@ dialog li b { white-space: nowrap; }
       S('path d="M32 58l18-8l18 8v20l-18 8l-18-8z"', '#9B8CFF', '#7A69E8') +
       '<path d="M32 58l18 7l18-7M50 65v21" fill="none" stroke-width="1.5"/><path d="M33 59l17 6.5v19.5l-17-7.5z" fill="#B7ABFF" stroke="none" opacity=".7"/>' +
       '<circle cx="50" cy="74" r="6" fill="#FFB3D9" opacity=".5" stroke="none"/><path d="M50 69l4 5l-4 5l-4-5z" fill="#FF6F91" stroke-width="1.6"/>' +
-      S('path d="M20 62l7-4l6 6l-3 12l-7 2l-5-6z"', '#9B8CFF', '#7A69E8', 1.5) + S('path d="M80 62l-7-4l-6 6l3 12l7 2l5-6z"', '#9B8CFF', '#7A69E8', 1.5) +
+      S('path d="M20 62l7-4l6 6l-3 12l-7 2l-5-6z"', '#9B8CFF', '#7A69E8', 1.5) + B(S('path d="M80 62l-7-4l-6 6l3 12l7 2l5-6z"', '#9B8CFF', '#7A69E8', 1.5), 70, 60) +
       S('path d="M33 38l9-14h16l9 14l-5 14h-24z"', '#C9B8FF', '#A592F2') +
       '<path d="M42 24l8 8l8-8M33 38l17-6l17 6" fill="none" stroke-width="1.4"/><path d="M42 24.5l8 7.5l8-7.5z" fill="#E8E0FF" stroke="none"/>' +
       F({ y: 42, g: 7, r: 3.5, iris: '#FF9EC4', m: 'smile', w: 2.6 }) + star(14, 40, 3, '#fff') + star(86, 44, 3.5, '#fff') + star(80, 22, 2, '#fff')],
@@ -1170,11 +1184,11 @@ dialog li b { white-space: nowrap; }
       S('circle cx="50" cy="56" r="5"', '#86C4CF', '#5FA5B3', 1.5) + hi(39, 44, 3.5, 2, -35) +
       F({ y: 50, g: 9, r: 3.8, iris: '#FFE066', m: 'smile', my: 63, w: 4, by: 57, bg: 16 }) +
       '<path d="M45 64.5l1.2-3l1.4 3M52.4 64.5l1.4-3l1.2 3" fill="#fff" stroke-width="1.2"/>' +
-      '<g transform="rotate(28 72 72)"><path d="M69 76q-3-28 5-34q10 4 5 34z" fill="#A8723C"/><path d="M71 52q3 2 6 0M72 62q2 2 5 0" fill="none" stroke="#7A5030" stroke-width="1.5"/></g>' + S('ellipse cx="71" cy="70" rx="5" ry="5.5"', '#6FB7C7', '#4E97A8', 1) + S('ellipse cx="29" cy="68" rx="5" ry="5.5"', '#6FB7C7', '#4E97A8', 1)],
+      B('<g transform="rotate(28 72 72)"><path d="M69 76q-3-28 5-34q10 4 5 34z" fill="#A8723C"/><path d="M71 52q3 2 6 0M72 62q2 2 5 0" fill="none" stroke="#7A5030" stroke-width="1.5"/></g>' + S('ellipse cx="71" cy="70" rx="5" ry="5.5"', '#6FB7C7', '#4E97A8', 1), 67, 68) + S('ellipse cx="29" cy="68" rx="5" ry="5.5"', '#6FB7C7', '#4E97A8', 1)],
 
     // 28. Chauve-souris
     ['Chauvi', '<ellipse cx="50" cy="92" rx="14" ry="2.5" fill="' + INK + '" opacity=".1" stroke="none"/>' +
-      both('<path d="M34 54Q20 34 4 44Q10 48 10 54Q16 52 19 58Q24 54 28 61Q31 58 35 62z" fill="#7A6E94"/><path d="M33 55L8 46M33 57L17 55M33 59L26 60" fill="none" stroke-width="1.3"/>') +
+      ('<path d="M34 54Q20 34 4 44Q10 48 10 54Q16 52 19 58Q24 54 28 61Q31 58 35 62z" fill="#7A6E94"/><path d="M33 55L8 46M33 57L17 55M33 59L26 60" fill="none" stroke-width="1.3"/>') + B(mir('<path d="M34 54Q20 34 4 44Q10 48 10 54Q16 52 19 58Q24 54 28 61Q31 58 35 62z" fill="#7A6E94"/><path d="M33 55L8 46M33 57L17 55M33 59L26 60" fill="none" stroke-width="1.3"/>'), 66, 58) +
       both('<path d="M34 40l-4-18l14 10z" fill="#5B5070"/><path d="M35 36l-2-9l7 5z" fill="#FF9EC4" stroke="none"/>') +
       '<path d="M45 77l-1 5M55 77l1 5" fill="none" stroke-width="2.2"/>' +
       S('circle cx="50" cy="56" r="20"', '#5B5070', '#463D58') + S('ellipse cx="50" cy="66" rx="10" ry="8"', '#8E84A8', '#776D92', 1.5) +
@@ -1194,10 +1208,10 @@ dialog li b { white-space: nowrap; }
         '<path d="M29 42q21 6 42 0" fill="none" stroke="#C7334A" stroke-width="1.4"/>',
       face: { y: 46, g: 7.5, r: 3.3, iris: '#4F8FE8', m: 'none', by: 51, bg: 12 },
       front: hand(33, 73) +
-        '<circle cx="72" cy="78" r="11" fill="#FFF3B0" opacity=".55" stroke="none"/>' +
+        B('<circle cx="72" cy="78" r="11" fill="#FFF3B0" opacity=".55" stroke="none"/>' +
         '<path d="M68 70q4-6 8 0" fill="none" stroke-width="1.8"/><rect x="66" y="70" width="12" height="3" rx="1.5" fill="#3D3360" stroke-width="1.5"/>' +
         '<rect x="67" y="73" width="10" height="11" rx="2" fill="#FFE066"/><path d="M72 76q-2 2 0 5q2-3 0-5z" fill="#FF8F3C" stroke="none"/>' +
-        '<rect x="66" y="84" width="12" height="3" rx="1.5" fill="#3D3360" stroke-width="1.5"/>' + hand(70, 69)
+        '<rect x="66" y="84" width="12" height="3" rx="1.5" fill="#3D3360" stroke-width="1.5"/>' + hand(70, 69), 65, 70)
     })],
 
     // 30. Yéti
@@ -1208,7 +1222,7 @@ dialog li b { white-space: nowrap; }
       S('ellipse cx="50" cy="52" rx="14" ry="12"', '#BFE3F7', '#94CBEA', 1.5) +
       F({ y: 50, g: 6.5, r: 3.6, iris: '#4A8FE0', m: 'open', w: 3, my: 56 }) +
       S(fluff(26, 68, 6, 7, 8, 3), '#FFFFFF', '#D8E6F2', 1) +
-      S('circle cx="73" cy="70" r="8"', '#F5FBFF', '#CFE4F2', 1.5) + hi(70, 67, 2, 1.4) + S(fluff(70, 74, 5, 6, 8, 2.6), '#FFFFFF', '#D8E6F2', 1) +
+      B(S('circle cx="73" cy="70" r="8"', '#F5FBFF', '#CFE4F2', 1.5) + hi(70, 67, 2, 1.4) + S(fluff(70, 74, 5, 6, 8, 2.6), '#FFFFFF', '#D8E6F2', 1), 68, 66) +
       '<g fill="none" stroke="#8FD3F4" stroke-width="1.6"><path d="M14 30v10M9 35h10M10.5 31.5l7 7M17.5 31.5l-7 7"/><path d="M86 22v8M82 26h8M83 23l6 6M89 23l-6 6"/></g>']
   ];
 
