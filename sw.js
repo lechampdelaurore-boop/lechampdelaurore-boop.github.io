@@ -2,7 +2,7 @@
 // Changer CACHE à chaque mise à jour des fichiers listés ci-dessous.
 // Ce service worker couvre tout le site (/) : il ne s'occupe QUE des fichiers de l'accueil
 // et des icônes demandées par l'accueil (?hub=1). Chaque appli a son propre sw.js.
-var CACHE = 'applis-marc-v2';
+var CACHE = 'applis-marc-v3';
 var ICONS = 'applis-marc-icones';
 var FILES = [
   './',

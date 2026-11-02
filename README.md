@@ -1,8 +1,12 @@
-# Les applis de Marc
+# Mes applis
 
 La page d'accueil de toutes les applis pour réviser et jouer : **https://lechampdelaurore-boop.github.io/**
 
-Pompon, une petite mascotte kawaii originale, dit bonjour, puis chaque appli apparaît sous forme de grande carte à toucher.
+Une petite mascotte kawaii originale (Pompon, ou le compagnon choisi par l'enfant) dit bonjour à l'enfant par son prénom, puis chaque appli apparaît sous forme de grande carte à toucher.
+
+## Profil : prénom et compagnon
+
+À la première ouverture, une petite fenêtre demande le prénom de l'enfant, puis lui fait choisir son compagnon : Pompon ou une des 30 créatures des applis. L'accueil affiche ensuite « Coucou <prénom> ♥ » avec ce compagnon. Le bouton ⚙ permet de les changer. Tout reste dans le navigateur de l'appareil (clé `marc.profil`, partagée par toutes les applis du site) ; rien n'est envoyé sur internet.
 
 ## Ajouter une appli : rien à faire ici
 

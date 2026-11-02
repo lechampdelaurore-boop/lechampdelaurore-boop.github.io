@@ -1,5 +1,6 @@
 // Vérifie le site EN LIGNE, au format téléphone, comme le ferait Chrome sur Android :
-//  1. la page d'accueil s'affiche sans défiler de côté et liste les applis (via l'API GitHub) ;
+//  1. la page d'accueil s'affiche sans défiler de côté, liste les applis (via l'API GitHub),
+//     et la fenêtre de profil (prénom + compagnon) marche à la première ouverture ;
 //  2. l'accueil et chaque appli listée sont installables (manifeste, icônes, service worker),
 //     sans erreur dans la console, et se rouvrent hors ligne.
 // Usage : node tests/en-ligne.cjs [url]   (captures dans captures/)
@@ -68,9 +69,22 @@ async function checkHome(browser) {
       }))
     }));
     await page.screenshot({ path: `captures/accueil-${w}x${h}.png`, fullPage: true });
+    // Première ouverture : la fenêtre de profil demande le prénom, puis le compagnon.
+    let profil = false;
+    if (await page.evaluate(() => document.getElementById('profil').open)) {
+      await page.fill('#prenomInput', 'test');
+      await page.click('#profilOk');
+      await page.click('.avatar[data-nom="Braisou"]');
+      await page.screenshot({ path: `captures/profil-${w}x${h}.png` });
+      await page.click('#profilOk');
+      profil = await page.evaluate(() => !document.getElementById('profil').open &&
+        /Coucou Test/.test(document.querySelector('h1').textContent) &&
+        /Braisou/.test(document.getElementById('mascotte').getAttribute('aria-label')));
+    }
     const badIcons = info.apps.filter(a => !a.icon).map(a => a.name);
-    ok(loaded && info.apps.length >= MIN_APPS && info.side <= 0 && !badIcons.length && !errors.length,
+    ok(loaded && profil && info.apps.length >= MIN_APPS && info.side <= 0 && !badIcons.length && !errors.length,
       `${w}×${h} : ${loaded ? 'liste à jour depuis GitHub' : 'liste NON mise à jour depuis GitHub'}, ${info.apps.length} applis` +
+      (profil ? ', profil OK' : ', fenêtre de profil en panne') +
       (info.side > 0 ? `, déborde de ${info.side} px sur le côté` : '') +
       (badIcons.length ? `, icône manquante : ${badIcons.join(', ')}` : '') +
       (errors.length ? `, erreurs console : ${errors.join(' | ')}` : ''));
