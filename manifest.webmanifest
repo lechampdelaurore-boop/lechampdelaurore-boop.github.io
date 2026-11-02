@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "Les applis de Marc",
-  "short_name": "Applis Marc",
+  "name": "Mes applis",
+  "short_name": "Mes applis",
   "description": "Toutes les applis pour réviser et jouer, au même endroit.",
   "lang": "fr",
   "start_url": "/",

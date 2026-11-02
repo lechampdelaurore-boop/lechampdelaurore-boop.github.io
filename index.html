@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Les applis de Marc</title>
+<title>Mes applis</title>
 <meta name="description" content="Toutes les applis pour réviser et jouer, au même endroit.">
 <meta name="theme-color" content="#FFF4FA" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1E1933" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Applis Marc">
+<meta name="apple-mobile-web-app-title" content="Mes applis">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <style>
 /* ==========================================================================
-   Charte commune des applis de Marc — v1 (1er novembre 2026)
+   Charte commune des applis — v1 (1er novembre 2026)
    À coller en haut du <style> de chaque index.html (pas de fichier externe :
    chaque appli reste un seul index.html). Voir charte.md pour les règles.
    Polices : copier design/fonts/ dans le dossier fonts/ de l'appli.
@@ -403,6 +403,46 @@ dialog h2 { margin: 0 0 10px; }
 dialog ol { margin: 0 0 16px; padding-left: 1.3em; }
 dialog li { margin: 8px 0; font-weight: 600; }
 dialog li b { white-space: nowrap; }
+
+/* Bouton ⚙ et fenêtre du prénom */
+.hello .rond { align-self: flex-start; }
+@media (max-width: 380px) { .mascot { width: 88px; } .hello { gap: 8px; } }
+#profil { padding: 0; max-height: calc(100dvh - 32px); }
+#profil form { display: flex; flex-direction: column; max-height: calc(100dvh - 38px); }
+.profil-haut { padding: 20px 20px 4px; }
+.profil-corps { padding: 4px 20px 6px; overflow-y: auto; }
+.profil-bas { padding: 12px 20px 18px; border-top: 2px dashed var(--track); }
+#profil label, .profil-label { display: block; font: 600 1.15rem var(--display); margin: 0 0 10px; }
+#prenomInput {
+  display: block; width: 100%; min-height: var(--toucher); padding: 8px 16px;
+  font: 600 1.4rem var(--display); color: var(--ink); background: var(--surface2);
+  border: var(--bord) solid var(--line); border-radius: var(--r-btn);
+}
+#prenomInput:focus { outline: 4px solid var(--sun); outline-offset: 2px; }
+#prenomInput::placeholder { color: var(--muted); opacity: .8; }
+.profil-boutons { display: flex; gap: 10px; }
+.profil-boutons .btn { flex: 1; width: auto; padding: 10px 12px; }
+.profil-note { margin: 12px 0 0; color: var(--muted); font-size: .9rem; font-weight: 600; text-align: center; }
+.etape-avatar .profil-label { margin-top: 18px; }
+.profil-seul .etape-avatar .profil-label { margin-top: 4px; }
+.avatars { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 10px; padding: 4px 2px 8px; }
+.avatar {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 6px 2px 6px; min-height: 104px;
+  background: var(--surface); color: var(--ink);
+  border: var(--bord) solid var(--line); border-radius: var(--r-touche);
+  box-shadow: 0 4px 0 var(--line); cursor: pointer; font: 600 .82rem var(--display);
+  -webkit-tap-highlight-color: transparent;
+}
+.avatar svg { width: 64px; height: 64px; overflow: visible; }
+.avatar[aria-checked="true"] { background: var(--p-soleil); outline: 4px solid var(--sun); outline-offset: 1px; }
+.avatar:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+.mascot.creature { overflow: visible; }
+/* Compagnon qui fait coucou et cligne des yeux (groupes .bras et .yeux des créatures) */
+.mascot.creature .bras, .avatar[aria-checked="true"] .bras { transform-box: view-box; animation: coucou-bras 2.6s ease-in-out infinite; }
+.mascot.creature .yeux, .avatar[aria-checked="true"] .yeux { transform-box: view-box; animation: cligne-yeux 4s infinite; }
+@keyframes coucou-bras { 0%, 55%, 100% { transform: rotate(0); } 65% { transform: rotate(-22deg); } 75% { transform: rotate(8deg); } 85% { transform: rotate(-18deg); } 93% { transform: rotate(4deg); } }
+@keyframes cligne-yeux { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
 </style>
 </head>
 <body>
@@ -410,7 +450,7 @@ dialog li b { white-space: nowrap; }
 
 <div class="wrap">
   <header class="hello">
-    <svg class="mascot anim-saute" viewBox="0 0 160 160" role="img" aria-label="Pompon, la petite boule qui dit bonjour">
+    <svg class="mascot anim-saute" id="mascotte" viewBox="0 0 160 160" role="img" aria-label="Pompon, la petite boule qui dit bonjour">
       <ellipse cx="80" cy="150" rx="46" ry="6" fill="#2B2340" opacity=".15"/>
       <path d="M80 30 C80 22 82 16 87 11" fill="none" stroke="#2B2340" stroke-width="5" stroke-linecap="round"/>
       <path d="M87 12 C96 2 111 5 114 12 C106 21 93 21 87 12Z" fill="#8EE3C8" stroke="#2B2340" stroke-width="4" stroke-linejoin="round"/>
@@ -432,9 +472,10 @@ dialog li b { white-space: nowrap; }
       <path d="M71 104 Q75.5 111 80 104 Q84.5 111 89 104" fill="none" stroke="#2B2340" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
     <div class="bulle">
-      <h1>Coucou Marc&nbsp;<span class="heart">♥</span></h1>
+      <h1>Coucou<span id="prenom"></span>&nbsp;<span class="heart">♥</span></h1>
       <p>On joue à quoi aujourd'hui&nbsp;?</p>
     </div>
+    <button class="rond" id="reglagesBtn" type="button" aria-label="Réglages : changer de prénom">⚙</button>
   </header>
 
   <main>
@@ -456,6 +497,29 @@ dialog li b { white-space: nowrap; }
   <h2 id="howtoTitle">Mettre sur l'écran d'accueil</h2>
   <ol id="howtoSteps"></ol>
   <button class="btn btn-action" type="button" id="howtoClose">J'ai compris</button>
+</dialog>
+
+<dialog id="profil" aria-labelledby="profilTitre">
+  <form id="profilForm" method="dialog" autocomplete="off">
+    <div class="profil-haut"><h2 id="profilTitre">Bienvenue&nbsp;! 👋</h2></div>
+    <div class="profil-corps">
+      <div class="etape-prenom">
+        <label for="prenomInput" id="profilQuestion">Comment tu t'appelles&nbsp;?</label>
+        <input id="prenomInput" type="text" maxlength="20" autocomplete="given-name" autocapitalize="words" spellcheck="false" enterkeyhint="next" placeholder="Ton prénom">
+      </div>
+      <div class="etape-avatar">
+        <p class="profil-label" id="avatarQuestion">Choisis ton compagnon&nbsp;:</p>
+        <div class="avatars" id="avatars" role="radiogroup" aria-labelledby="avatarQuestion"></div>
+      </div>
+    </div>
+    <div class="profil-bas">
+      <div class="profil-boutons">
+        <button class="btn" type="button" id="profilAnnuler">Annuler</button>
+        <button class="btn btn-action" type="submit" id="profilOk">Suivant</button>
+      </div>
+      <p class="profil-note" id="profilNote">Ton prénom reste sur cet appareil. Tu pourras le changer avec ⚙.</p>
+    </div>
+  </form>
 </dialog>
 
 <script>
@@ -580,7 +644,7 @@ dialog li b { white-space: nowrap; }
     };
     return get(base, { cache: 'no-store' }).then(function (r) { return r.text(); }).then(function (html) {
       var doc = new DOMParser().parseFromString(html, 'text/html');
-      // Une appli de Marc le dit dans sa page : <meta name="appli-marc" content="oui">
+      // Une appli de la collection le dit dans sa page : <meta name="appli-marc" content="oui">
       // (ou porte le sujet « appli-marc » sur GitHub).
       if (!doc.querySelector('meta[name="appli-marc"]') && (repo.topics || []).indexOf(TOPIC) < 0) return null;
       var t = doc.querySelector('title');
@@ -675,6 +739,610 @@ dialog li b { white-space: nowrap; }
     if (howto.showModal) howto.showModal(); else howto.setAttribute('open', '');
   });
   document.getElementById('howtoClose').addEventListener('click', function () { howto.close ? howto.close() : howto.removeAttribute('open'); });
+
+  // Profil de l'enfant : prénom + compagnon (Pompon ou une des 30 créatures),
+  // demandés à la première ouverture, modifiables avec ⚙.
+  // Gardés sur l'appareil seulement (même stockage pour toutes les applis du site).
+  /* ---------- Créatures de récompense ---------- */
+  // Dessins en viewBox 100 × 100, contour commun ajouté par showCreature().
+  var INK = '#2B2340', SKIN = '#FFE0CC', SKIN2 = '#F2BFA4';
+  var uidN = 0;
+  // Forme ombrée : couleur claire décalée vers le haut à gauche, ombre en bas à droite, contour par-dessus.
+  function S(shape, base, shade, d) {
+    var id = 'kc' + (++uidN);
+    d = d == null ? 3 : d;
+    return '<clipPath id="' + id + '"><' + shape + '/></clipPath>' +
+      '<g clip-path="url(#' + id + ')" stroke="none"><' + shape + ' fill="' + shade + '"/>' +
+      '<g transform="translate(' + -d + ' ' + -d + ')"><' + shape + ' fill="' + base + '"/></g></g><' + shape + ' fill="none"/>';
+  }
+  // Bras qui fait coucou : groupe .bras qui tourne autour de l'épaule (ox, oy).
+  function B(s, ox, oy) { return '<g class="bras" style="transform-origin:' + ox + 'px ' + oy + 'px">' + s + '</g>'; }
+  function mir(s) { return '<g transform="matrix(-1 0 0 1 100 0)">' + s + '</g>'; }
+  function both(s) { return s + mir(s); }
+  function hi(x, y, rx, ry, rot) {
+    return '<ellipse cx="' + x + '" cy="' + y + '" rx="' + rx + '" ry="' + ry + '" fill="#fff" opacity=".65" stroke="none"' +
+      (rot ? ' transform="rotate(' + rot + ' ' + x + ' ' + y + ')"' : '') + '/>';
+  }
+  function star(x, y, s, c) {
+    return '<path d="M' + x + ' ' + (y - s) + 'Q' + x + ' ' + y + ' ' + (x + s) + ' ' + y + 'Q' + x + ' ' + y + ' ' + x + ' ' + (y + s) +
+      'Q' + x + ' ' + y + ' ' + (x - s) + ' ' + y + 'Q' + x + ' ' + y + ' ' + x + ' ' + (y - s) + 'z" fill="' + (c || '#FFC93C') + '" stroke-width="1.2"/>';
+  }
+  function ground(rx, y) { return '<ellipse cx="50" cy="' + (y || 91) + '" rx="' + (rx || 22) + '" ry="3" fill="' + INK + '" opacity=".14" stroke="none"/>'; }
+  // Tube à contour (cou, tentacule…) : un trait épais foncé puis un trait coloré plus fin.
+  function tube(d, c, w) {
+    return '<path d="' + d + '" fill="none" stroke="' + INK + '" stroke-width="' + (w + 5) + '"/><path d="' + d + '" fill="none" stroke="' + c + '" stroke-width="' + w + '"/>';
+  }
+  // Contour duveteux autour d'une ellipse.
+  function fluff(cx, cy, rx, ry, n, b) {
+    var d = '';
+    for (var i = 0; i <= n; i++) {
+      var t = i / n * 2 * Math.PI, x = cx + rx * Math.cos(t), y = cy + ry * Math.sin(t);
+      d += (i ? 'A' + b + ' ' + b + ' 0 0 1 ' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
+    }
+    return 'path d="' + d + 'z"';
+  }
+  // Visage : o.x, o.y (yeux), o.g (écart), o.r (taille), o.iris, o.happy, o.m (smile|open|cat|none), o.my (bouche)
+  function F(o) {
+    var x = o.x || 50, y = o.y, g = o.g || 7, r = o.r || 3.6, Y = '<g class="yeux" style="transform-origin:' + x + 'px ' + y + 'px">', s = '<g stroke="none">' + Y;
+    [x - g, x + g].forEach(function (ex) {
+      if (o.happy) return;
+      s += '<ellipse cx="' + ex + '" cy="' + y + '" rx="' + r + '" ry="' + (r * 1.2).toFixed(2) + '" fill="' + INK + '"/>';
+      if (o.iris) s += '<ellipse cx="' + ex + '" cy="' + (y + r * 0.55).toFixed(2) + '" rx="' + (r * 0.72).toFixed(2) + '" ry="' + (r * 0.42).toFixed(2) + '" fill="' + o.iris + '"/>';
+      s += '<circle cx="' + (ex - r * 0.35).toFixed(2) + '" cy="' + (y - r * 0.45).toFixed(2) + '" r="' + (r * 0.42).toFixed(2) + '" fill="#fff"/>' +
+        '<circle cx="' + (ex + r * 0.4).toFixed(2) + '" cy="' + (y + r * 0.3).toFixed(2) + '" r="' + (r * 0.18).toFixed(2) + '" fill="#fff"/>';
+    });
+    s += '</g>';
+    if (o.blush !== false) {
+      var by = o.by || y + r + 2.5, bg = o.bg || g + r + 1.5;
+      s += '<ellipse cx="' + (x - bg) + '" cy="' + by + '" rx="' + (r * 1.05).toFixed(2) + '" ry="' + (r * 0.62).toFixed(2) + '" fill="#FF8FA8" opacity=".75"/>' +
+        '<ellipse cx="' + (x + bg) + '" cy="' + by + '" rx="' + (r * 1.05).toFixed(2) + '" ry="' + (r * 0.62).toFixed(2) + '" fill="#FF8FA8" opacity=".75"/>';
+    }
+    s += '</g>';
+    if (o.happy) s += Y;
+    if (o.happy) [x - g, x + g].forEach(function (ex) {
+      s += '<path d="M' + (ex - r) + ' ' + (y + r * 0.4) + 'q' + r + ' ' + (-r * 1.8) + ' ' + 2 * r + ' 0" fill="none" stroke-width="2.2"/>';
+    });
+    if (o.happy) s += '</g>';
+    var my = o.my || y + r + 3.5, w = o.w || r;
+    if (o.m === 'open') s += '<path d="M' + (x - w) + ' ' + my + 'Q' + x + ' ' + (my + w * 2) + ' ' + (x + w) + ' ' + my + 'z" fill="#8A2D45" stroke-width="1.8"/>' +
+      '<ellipse cx="' + x + '" cy="' + (my + w * 0.6) + '" rx="' + w * 0.45 + '" ry="' + w * 0.28 + '" fill="#FF8FA8" stroke="none"/>';
+    else if (o.m === 'cat') s += '<path d="M' + (x - w) + ' ' + my + 'q' + w / 2 + ' ' + w * 0.8 + ' ' + w + ' 0q' + w / 2 + ' ' + w * 0.8 + ' ' + w + ' 0" fill="none" stroke-width="2"/>';
+    else if (o.m !== 'none') s += '<path d="M' + (x - w) + ' ' + my + 'q' + w + ' ' + w + ' ' + 2 * w + ' 0" fill="none" stroke-width="2.2"/>';
+    return s;
+  }
+  function hand(x, y, c, c2) { return S('circle cx="' + x + '" cy="' + y + '" r="4.3"', c || SKIN, c2 || SKIN2, 1.5); }
+  // Petit héros : pieds, corps, tête, puis accessoires.
+  function hero(o) {
+    return (o.back || '') +
+      '<ellipse cx="42" cy="86" rx="6" ry="4" fill="' + o.feet + '"/><ellipse cx="58" cy="86" rx="6" ry="4" fill="' + o.feet + '"/>' +
+      S('path d="M33 86q-1-20 17-22q18 2 17 22q-17 4-34 0z"', o.body, o.body2) + (o.deco || '') + (o.under || '') +
+      (o.noHead ? '' : S('circle cx="50" cy="44" r="19"', SKIN, SKIN2, 2.5)) + (o.head || '') + F(o.face) + (o.top || '') + (o.front || '');
+  }
+  function dragonWing(c) {
+    return both('<path d="M34 56Q24 33 7 37Q12 43 11 50Q17 48 19 54Q24 51 27 57Q31 55 34 58z" fill="' + c + '"/>' +
+      '<path d="M32 54L10 39M32 55L14 49M32 56L22 53" fill="none" stroke-width="1.3"/>');
+  }
+
+  var CREATURES = [
+    // 1. Dragon de feu
+    ['Braisou', ground(24) + dragonWing('#FF9F7A') +
+      S('path d="M62 79q25 4 22-17q-4-2-7 1q2 10-15 9z"', '#F2603C', '#CF4128', 2) +
+      '<path d="M82 63q-10-4-6-15q2 4 4 3q0-6 5-9q5 8 1 15q-1 4-4 6z" fill="#FFC93C"/><path d="M81 59q-3-2-1-6q2 2 3 1q1 3-2 5z" fill="#FF7A2E" stroke="none"/>' +
+      S('ellipse cx="40" cy="85" rx="7" ry="4.5"', '#F2603C', '#CF4128', 1.5) + S('ellipse cx="60" cy="85" rx="7" ry="4.5"', '#F2603C', '#CF4128', 1.5) +
+      '<path d="M44 40l3-6l3 5l3-5l3 6" fill="#FFC93C" stroke-width="1.8"/>' +
+      S('circle cx="50" cy="62" r="22"', '#F2603C', '#CF4128') +
+      S('ellipse cx="50" cy="71" rx="13" ry="11"', '#FFE3B8', '#F5C98E', 2) +
+      '<path d="M41 67h18M39 72h22M41 77h18" fill="none" stroke="#E2A866" stroke-width="1.5"/>' +
+      both('<path d="M37 45q-7-6-5-15q7 4 10 12z" fill="#FFE3B8"/>') +
+      S('ellipse cx="35" cy="70" rx="4" ry="5"', '#F2603C', '#CF4128', 1) + B(S('ellipse cx="65" cy="70" rx="4" ry="5"', '#F2603C', '#CF4128', 1), 63, 66) +
+      hi(39, 50, 4, 2.5, -35) + F({ y: 56, g: 9, r: 4.4, iris: '#FFB13C', m: 'open', my: 63, w: 3.6 }) +
+      '<path d="M53.5 63l1.5 3l1.5-3" fill="#fff" stroke-width="1.2"/>' + star(16, 26, 4) + star(80, 34, 3)],
+
+    // 2. Dragon de glace
+    ['Givrine', ground(24) + dragonWing('#D4F1FF') +
+      S('path d="M62 79q25 4 22-17q-4-2-7 1q2 10-15 9z"', '#9ED8F5', '#6DB6E2', 2) +
+      '<path d="M82 48l3 6l6 1l-4 5l1 6l-6-3l-6 3l1-6l-4-5l6-1z" fill="#fff" stroke-width="1.8"/>' +
+      S('ellipse cx="40" cy="85" rx="7" ry="4.5"', '#9ED8F5', '#6DB6E2', 1.5) + S('ellipse cx="60" cy="85" rx="7" ry="4.5"', '#9ED8F5', '#6DB6E2', 1.5) +
+      S('circle cx="50" cy="62" r="22"', '#9ED8F5', '#6DB6E2') +
+      S('ellipse cx="50" cy="71" rx="13" ry="11"', '#F0FAFF', '#CDEBFA', 2) +
+      '<path d="M50 64v13M44 67l12 7M56 67l-12 7" fill="none" stroke="#9ED8F5" stroke-width="1.6"/>' +
+      '<path d="M40 43l-2-13l7 9z" fill="#E8F7FF"/><path d="M46 41l4-15l4 15z" fill="#fff"/><path d="M60 43l2-13l-7 9z" fill="#E8F7FF"/>' +
+      S('ellipse cx="35" cy="70" rx="4" ry="5"', '#9ED8F5', '#6DB6E2', 1) + B(S('ellipse cx="65" cy="70" rx="4" ry="5"', '#9ED8F5', '#6DB6E2', 1), 63, 66) +
+      hi(39, 50, 4, 2.5, -35) + F({ y: 56, g: 9, r: 4.4, iris: '#4A8FE0', m: 'cat', my: 63, w: 3 }) +
+      star(18, 24, 3.5, '#fff') + star(84, 30, 4, '#fff') + star(12, 64, 2.5, '#fff')],
+
+    // 3. Fée des fleurs
+    ['Fleurette', hero({
+      back: '<g fill="#D9F7C8" opacity=".95"><path d="M38 64Q14 40 18 32Q30 32 42 60z"/><path d="M62 64Q86 40 82 32Q70 32 58 60z"/>' +
+        '<path d="M38 68Q20 80 24 84Q32 84 41 70z"/><path d="M62 68Q80 80 76 84Q68 84 59 70z"/></g>' +
+        '<path d="M40 62L24 37M60 62L76 37" fill="none" stroke="#8CCB6A" stroke-width="1.4"/>' +
+        '<path d="M31 40q-6 22 3 30l6-10zM69 40q6 22-3 30l-6-10z" fill="#A8723C"/>',
+      feet: '#7CC46A', body: '#FF9EC4', body2: '#E87BA6',
+      deco: '<path d="M33 86q4-12 9-14q4 8 8 14M50 86q4-10 9-14q4 8 8 14" fill="#FFC2DA" stroke-width="1.8"/>',
+      head: '<path d="M31 44q0-20 19-20q19 0 19 20q-4-8-12-10q-2 4-7 4q-5 0-7-4q-8 2-12 10z" fill="#B5793F"/>' +
+        '<g stroke-width="1.6"><circle cx="38" cy="28" r="4" fill="#FFD84D"/><circle cx="50" cy="24" r="4.5" fill="#FF6F91"/><circle cx="62" cy="28" r="4" fill="#B79CFF"/></g>' +
+        '<g fill="#fff" stroke="none"><circle cx="50" cy="24" r="1.6"/><circle cx="38" cy="28" r="1.3"/><circle cx="62" cy="28" r="1.3"/></g>',
+      face: { y: 47, g: 7, r: 3.6, iris: '#7A4A2A' },
+      front: hand(33, 74) + B(hand(67, 74) +
+        '<g transform="translate(7 10)"><path d="M62 64Q66 56 72 52" fill="none" stroke="#5FAE55" stroke-width="2"/><path d="M66 58q6-3 8 2q-6 3-8-2z" fill="#8CCB6A" stroke-width="1.4"/>' +
+        '<path d="M66 50q0-8 6-10q6 2 6 10q-3 4-6 2q-3 2-6-2z" fill="#FF6F91"/><path d="M69 42l3 6l3-6" fill="none" stroke-width="1.3"/></g>', 62, 72)
+    })],
+
+    // 4. Fée des étoiles
+    ['Étincelle', hero({
+      back: '<g opacity=".95"><path d="M38 62Q12 28 20 26Q34 26 43 58z" fill="#FFF1B8"/><path d="M62 62Q88 28 80 26Q66 26 57 58z" fill="#FFF1B8"/>' +
+        '<path d="M39 68Q18 86 26 88Q36 86 42 70z" fill="#FFE07A"/><path d="M61 68Q82 86 74 88Q64 86 58 70z" fill="#FFE07A"/></g>' +
+        '<g fill="#FFC93C" stroke="none"><circle cx="26" cy="34" r="2"/><circle cx="74" cy="34" r="2"/></g>' +
+        '<path d="M31 42q-4 26 5 30l4-14zM69 42q4 26-5 30l-4-14z" fill="#4B3FA8"/>',
+      feet: '#4B3FA8', body: '#B79CFF', body2: '#9378E8',
+      deco: star(42, 77, 2.6, '#FFF1B8') + star(55, 72, 2.2, '#FFF1B8') + star(58, 81, 2, '#FFF1B8'),
+      head: '<path d="M31 44q0-20 19-20q19 0 19 20q-3-9-9-12q-4 6-10 6q-6 0-10-6q-6 3-9 12z" fill="#4B3FA8"/>' +
+        '<path d="M60 24a7 7 0 1 0 6 10a5.5 5.5 0 1 1-6-10z" fill="#FFE066" stroke-width="1.6"/>',
+      face: { y: 47, g: 7, r: 3.6, iris: '#8C7AE6', m: 'open', w: 3 },
+      front: hand(33, 74) +
+        B('<path d="M66 74L80 50" fill="none" stroke="#FFF1B8" stroke-width="2.5"/>' + star(81, 46, 8, '#FFC93C') + hand(67, 74), 62, 72) +
+        star(88, 64, 2.5, '#FFE066') + star(74, 34, 2, '#FFE066') + star(14, 54, 2.5, '#FFE066')
+    })],
+
+    // 5. Luciole feu follet
+    ['Lumio', '<circle cx="50" cy="56" r="34" fill="#FFF3B0" stroke="none" opacity=".45"/><circle cx="50" cy="56" r="27" fill="#FFF3B0" stroke="none" opacity=".6"/>' +
+      '<g fill="#E8F7FF" opacity=".9"><ellipse cx="31" cy="40" rx="13" ry="7" transform="rotate(-35 31 40)"/><g class="bras" style="transform-origin:58px 48px"><ellipse cx="69" cy="40" rx="13" ry="7" transform="rotate(35 69 40)"/></g>' +
+      '<ellipse cx="30" cy="54" rx="9" ry="5" transform="rotate(15 30 54)"/><ellipse cx="70" cy="54" rx="9" ry="5" transform="rotate(-15 70 54)"/></g>' +
+      '<path d="M44 38q-4-12-12-13M56 38q4-12 12-13" fill="none" stroke-width="2"/>' + star(31, 24, 4.5, '#FFE066') + star(69, 24, 4.5, '#FFE066') +
+      S('ellipse cx="50" cy="73" rx="14" ry="12"', '#FFE066', '#FFC93C', 2) + '<path d="M38 72q12 5 24 0M39 78q11 4 22 0" fill="none" stroke="#F5A623" stroke-width="1.5"/>' +
+      S('circle cx="50" cy="52" r="17"', '#7C6FD8', '#5E52BF') + hi(43, 43, 3.5, 2, -35) +
+      F({ y: 52, g: 6.5, r: 3.8, iris: '#B7A3FF', m: 'smile', w: 3 }) +
+      star(18, 74, 2.5, '#FFE066') + star(84, 72, 3, '#FFE066') + star(80, 88, 2, '#FFE066')],
+
+    // 6. Esprit de la mousse
+    ['Moussu', ground(24) + '<path d="M50 39v-9" fill="none" stroke-width="2.2"/><path d="M50 31q-11-8-15 1q9 4 15-1z" fill="#A6DD7A"/><path d="M50 30q11-10 16-1q-9 5-16 1z" fill="#A6DD7A"/>' +
+      '<path d="M42 31l8-0.5M52 29l9 0" fill="none" stroke="#7CC46A" stroke-width="1.2"/>' +
+      '<path d="M33 86q-1-6 5-6q3 6 0 7zM67 86q1-6-5-6q-3 6 0 7z" fill="#8A5A3C"/>' +
+      S(fluff(50, 62, 22, 22, 14, 6), '#7CC46A', '#5BA650') +
+      '<g stroke="none" fill="#5BA650"><circle cx="38" cy="52" r="3"/><circle cx="64" cy="73" r="3.5"/><circle cx="62" cy="48" r="2"/><circle cx="36" cy="75" r="2.2"/></g>' +
+      '<rect x="66" y="56" width="4" height="7" rx="2" fill="#FFF1DC" stroke-width="1.5"/><path d="M62 57q6-9 12 0z" fill="#F25C54" stroke-width="1.6"/>' +
+      
+      '<g fill="#fff" stroke="none"><circle cx="66" cy="54.5" r="1"/><circle cx="70" cy="55.5" r=".9"/></g>' +
+      F({ y: 61, g: 8, r: 4.4, iris: '#3E7A3A', m: 'cat', w: 3 }) +
+      B(S('ellipse cx="74" cy="70" rx="4.5" ry="5.5"', '#7CC46A', '#5BA650', 1), 70, 74)],
+
+    // 7. Champignon
+    ['Champi', ground(22) + '<path d="M28 90q2-8 5-1q2-7 4 1M64 90q2-8 4-1q3-7 5 1" fill="none" stroke="#5FAE55" stroke-width="2"/>' +
+      '<ellipse cx="43" cy="87" rx="5" ry="3.5" fill="#C98A4B"/><ellipse cx="57" cy="87" rx="5" ry="3.5" fill="#C98A4B"/>' +
+      S('path d="M36 56q-2 30 14 30q16 0 14-30z"', '#FFF1DC', '#EBD2B0', 2.5) +
+      hand(35, 74, '#FFF1DC', '#EBD2B0') + B(hand(65, 74, '#FFF1DC', '#EBD2B0'), 62, 70) +
+      S('path d="M30 56q20 7 40 0q-4 5-20 7q-16-2-20-7z"', '#F6DFC0', '#E6C79E', 1) +
+      '<path d="M38 58l2 3M44 59l1 3.5M50 59.5v3.5M56 59l-1 3.5M62 58l-2 3" fill="none" stroke="#D1AE80" stroke-width="1.2"/>' +
+      S('path d="M22 56q0-32 28-32q28 0 28 32q-28 7-56 0z"', '#F25C54', '#D23F3F') +
+      '<g stroke-width="1.6" fill="#fff"><circle cx="37" cy="40" r="5"/><circle cx="54" cy="32" r="3.5"/><circle cx="66" cy="45" r="4.5"/><circle cx="49" cy="47" r="2.5"/><circle cx="28" cy="51" r="2"/></g>' +
+      hi(33, 33, 4, 2, -40) + F({ y: 69, g: 6.5, r: 3.6, iris: '#C98A4B', m: 'open', w: 2.8 })],
+
+    // 8. Nuage arc-en-ciel
+    ['Nuagine', '<g fill="none" stroke-width="5" stroke-linecap="butt"><path d="M20 62a30 30 0 0 1 60 0" stroke="#FF8FA8"/><path d="M25 62a25 25 0 0 1 50 0" stroke="#FFE066"/><path d="M30 62a20 20 0 0 1 40 0" stroke="#8FD3F4"/></g>' +
+      '<path d="M17.5 62a32.5 32.5 0 0 1 65 0M32.5 62a17.5 17.5 0 0 1 35 0" fill="none" stroke-width="1.6"/>' +
+      '<g fill="#8FD3F4" stroke-width="1.5"><path d="M34 82q-3 4 0 6q3-2 0-6z"/><path d="M50 86q-3 4 0 6q3-2 0-6z"/></g>' +
+      '<path d="M66 80l-4 6h4l-3 6" fill="none" stroke="#FFC93C" stroke-width="3"/><path d="M66 80l-4 6h4l-3 6" fill="none" stroke-width="1" opacity=".6"/>' +
+      S('path d="M28 78a12 12 0 0 1 2-22a15 15 0 0 1 22-10a14 14 0 0 1 22 8a12 12 0 0 1-2 24z"', '#FFFFFF', '#DCE6F5') +
+      hi(40, 54, 4, 2, -25) + F({ y: 64, g: 8, r: 4, iris: '#8FD3F4', m: 'cat', w: 3 }) +
+      B(S('circle cx="76" cy="73" r="4.5"', '#FFFFFF', '#DCE6F5', 1), 72, 74)],
+
+    // 9. Licorne
+    ['Licorneau', ground(22) + B('<path d="M70 72q18-2 14 14q-2-6-8-6q4-6-6-8z" fill="#B79CFF"/>', 68, 74) +
+      S('ellipse cx="41" cy="85" rx="6.5" ry="4.5"', '#fff', '#E3DCF5', 1.5) + S('ellipse cx="59" cy="85" rx="6.5" ry="4.5"', '#fff', '#E3DCF5', 1.5) +
+      '<path d="M36 87h10M54 87h10" fill="none" stroke="#B79CFF" stroke-width="2.5" stroke-linecap="butt"/>' +
+      S('ellipse cx="50" cy="73" rx="17" ry="13"', '#fff', '#E3DCF5') +
+      both('<path d="M33 40l-3-13l11 7z" fill="#fff"/><path d="M34 37l-1.5-6l5 3.5z" fill="#FFB3D9" stroke="none"/>') +
+      S('circle cx="50" cy="52" r="20"', '#fff', '#E3DCF5') +
+      '<path d="M45 34l5-20l5 20z" fill="#FFE066"/><path d="M46.5 28l7-3M47.5 22l5-2" fill="none" stroke="#F5A623" stroke-width="1.4"/>' +
+      '<path d="M31 46q-6-14 6-16q2-6 9-3q-3 8-10 9q-3 4-5 10z" fill="#FF9EC4"/><path d="M55 27q7-3 11 3q7 1 6 9q-6-3-10-2q-3-6-7-10z" fill="#9EE6E0"/>' +
+      '<path d="M45 30q4-5 10-3q-3 5-10 3z" fill="#B79CFF"/>' +
+      S('ellipse cx="50" cy="62" rx="11" ry="7"', '#FFE6F0', '#F7CADB', 1.5) +
+      '<g stroke="none" fill="' + INK + '"><circle cx="46" cy="62" r="1.3"/><circle cx="54" cy="62" r="1.3"/></g>' +
+      F({ y: 50, g: 9, r: 4.3, iris: '#B79CFF', m: 'smile', my: 66, w: 2.5, by: 57, bg: 15 }) + star(78, 28, 3.5) + star(22, 62, 2.5, '#FF9EC4')],
+
+    // 10. Hibou érudit
+    ['Hibulle', '<path d="M80 14a10 10 0 1 0 8 15a8 8 0 1 1-8-15z" fill="#FFE066"/>' + star(16, 22, 3) + ground(20) +
+      '<g fill="#FFC93C" stroke-width="1.6"><path d="M41 82l-3 6h7zM59 82l3 6h-7z"/></g>' +
+      both('<path d="M31 40l1-14l11 9z" fill="#8C7AE6"/>') +
+      S('ellipse cx="50" cy="60" rx="22" ry="24"', '#8C7AE6', '#6E5BCC') +
+      S('ellipse cx="50" cy="70" rx="14" ry="12"', '#E4DEFF', '#C9C0F2', 1.5) +
+      '<path d="M42 66q2 2 4 0q2 2 4 0q2 2 4 0q2 2 4 0M44 72q2 2 4 0q2 2 4 0q2 2 4 0" fill="none" stroke="#9D8FE0" stroke-width="1.3"/>' +
+      '<g stroke-width="2"><circle cx="40.5" cy="51" r="8.5" fill="#fff"/><circle cx="59.5" cy="51" r="8.5" fill="#fff"/></g>' +
+      '<path d="M49 51h2" fill="none" stroke-width="2"/>' +
+      F({ y: 51, g: 9.5, r: 4, iris: '#FFC93C', blush: false, m: 'none' }) +
+      '<path d="M47 58l3 4.5l3-4.5z" fill="#FFC93C" stroke-width="1.5"/>' +
+      '<path d="M34 78l16 4l16-4v-9l-16 4l-16-4z" fill="#E8455A"/><path d="M50 73v9" fill="none" stroke-width="1.6"/>' +
+      '<path d="M36 72l12 3M52 75l12-3" fill="none" stroke="#fff" stroke-width="1.3"/>' +
+      S('ellipse cx="30" cy="68" rx="6" ry="11"', '#7564CF', '#5A49B5', 1.5) + B(S('ellipse cx="70" cy="68" rx="6" ry="11"', '#7564CF', '#5A49B5', 1.5), 68, 60)],
+
+    // 11. Golem de pierre
+    ['Galet', ground(26) + S('rect x="36" y="80" width="11" height="8" rx="4"', '#A8A3B8', '#8A849C', 1.5) + S('rect x="53" y="80" width="11" height="8" rx="4"', '#A8A3B8', '#8A849C', 1.5) +
+      S('rect x="28" y="38" width="44" height="45" rx="16"', '#BDB8CC', '#9C96AE') +
+      S('rect x="16" y="56" width="12" height="20" rx="6"', '#A8A3B8', '#8A849C', 1.5) + B(S('rect x="72" y="56" width="12" height="20" rx="6"', '#A8A3B8', '#8A849C', 1.5), 74, 60) +
+      '<path d="M30 50q2-14 20-12q18-2 20 12q-6-4-10 0q-4-5-10-1q-6-4-10 1q-4-4-10 0z" fill="#7CC46A"/>' +
+      '<g stroke-width="1.5"><circle cx="58" cy="37" r="3" fill="#FF9EC4"/><circle cx="64" cy="40" r="2.4" fill="#FFE066"/></g>' +
+      '<path d="M64 62l3 5l-2 4M33 70l4 2" fill="none" stroke-width="1.6"/>' +
+      '<circle cx="50" cy="73" r="5" fill="#9EF0FF" stroke="none" opacity=".5"/><path d="M50 69l3 4l-3 4l-3-4z" fill="#5FE0F5" stroke-width="1.6"/>' +
+      hi(34, 58, 2, 4) + F({ y: 58, g: 8, r: 4, iris: '#5FE0F5', m: 'smile', w: 3 })],
+
+    // 12. Griffon
+    ['Grifon', ground(24) + '<path d="M66 76q18 2 14-14" fill="none" stroke-width="3"/><path d="M80 63q-6-6 0-11q6 5 0 11z" fill="#C98A4B"/>' +
+      S('ellipse cx="50" cy="70" rx="20" ry="16"', '#F5C46B', '#DDA448') +
+      '<g fill="#FFC93C" stroke-width="1.6"><path d="M37 82l-2 6h4l1-2l1 2h4l-1-6zM55 82l-1 6h4l1-2l1 2h4l-2-6z"/></g>' +
+      ('<path d="M38 68Q18 66 12 38Q19 44 23 42Q23 49 28 49Q27 55 33 56Q33 61 38 60z" fill="#FFF8EE"/><path d="M36 64Q24 58 19 46M36 62Q28 56 26 50" fill="none" stroke="#C9B8A0" stroke-width="1.3"/>') + B(mir('<path d="M38 68Q18 66 12 38Q19 44 23 42Q23 49 28 49Q27 55 33 56Q33 61 38 60z" fill="#FFF8EE"/><path d="M36 64Q24 58 19 46M36 62Q28 56 26 50" fill="none" stroke="#C9B8A0" stroke-width="1.3"/>'), 63, 64) +
+      '<path d="M41 30l3-10l4 8l2-10l3 10l4-8l1 10" fill="#FFF8EE"/>' +
+      S('circle cx="50" cy="46" r="17"', '#FFF8EE', '#E8DCC8') +
+      '<path d="M35 46q15 6 30 0" fill="none" stroke="#E8DCC8" stroke-width="1.4"/>' +
+      F({ y: 43, g: 7, r: 3.8, iris: '#C98A4B', m: 'none', by: 50, bg: 12 }) +
+      '<path d="M45 49q5-3 10 0q-1 6-5 9q-4-3-5-9z" fill="#FFA43C" stroke-width="1.8"/><path d="M46 52h8" fill="none" stroke-width="1.2"/>'],
+
+    // 13. Phénix
+    ['Phénixou', '<path d="M44 72q-14 6-18 18q12-2 20-14zM56 72q14 6 18 18q-12-2-20-14z" fill="#FF5470"/><path d="M50 72q-8 12 0 24q8-12 0-24z" fill="#FFC93C"/><path d="M50 80q-3 5 0 10q3-5 0-10z" fill="#FF7A45" stroke="none"/>' +
+      '<path d="M50 39q-6-14 0-22q6 8 0 22zM44 41q-10-8-8-16q8 4 8 16zM56 41q10-8 8-16q-8 4-8 16z" fill="#FFC93C"/><path d="M50 36q-2-6 0-11q2 5 0 11z" fill="#FF7A45" stroke="none"/>' +
+      ('<path d="M33 56Q12 40 8 58Q16 56 18 62Q22 58 26 63Q30 58 34 62z" fill="#FFB347"/><path d="M32 58Q20 54 16 66Q22 64 26 68z" fill="#FF7A45"/>') + B(mir('<path d="M33 56Q12 40 8 58Q16 56 18 62Q22 58 26 63Q30 58 34 62z" fill="#FFB347"/><path d="M32 58Q20 54 16 66Q22 64 26 68z" fill="#FF7A45"/>'), 66, 59) +
+      S('circle cx="50" cy="58" r="19"', '#FF7A45', '#E65A30') + S('ellipse cx="50" cy="67" rx="10" ry="8"', '#FFD9A8', '#F5BD7E', 1.5) +
+      hi(42, 48, 3.5, 2, -35) + F({ y: 54, g: 7, r: 4, iris: '#FFE066', m: 'none' }) +
+      '<path d="M47 60l3 4.5l3-4.5z" fill="#FFC93C" stroke-width="1.5"/>' +
+      '<g fill="#FFC93C" stroke="none"><circle cx="20" cy="30" r="2"/><circle cx="82" cy="36" r="2.5"/><circle cx="84" cy="22" r="1.5"/></g>'],
+
+    // 14. Coffre mimique
+    ['Mimic', ground(28) + '<g fill="#FFC93C" stroke-width="1.6"><ellipse cx="22" cy="87" rx="5" ry="3"/><ellipse cx="78" cy="88" rx="4.5" ry="2.8"/><ellipse cx="74" cy="84" rx="4" ry="2.5"/></g>' +
+      S('rect x="24" y="54" width="52" height="32" rx="5"', '#B5763A', '#94592A') +
+      '<path d="M25 66h50M25 76h50" fill="none" stroke="#94592A" stroke-width="1.4"/>' +
+      '<rect x="30" y="54" width="6" height="32" fill="#8E95A8" stroke-width="1.8"/><rect x="64" y="54" width="6" height="32" fill="#8E95A8" stroke-width="1.8"/>' +
+      '<rect x="27" y="47" width="46" height="9" fill="#4A2033"/>' +
+      '<path d="M31 47l3 5l3-5zM40 47l2.5 4l2.5-4zM55 47l2.5 4l2.5-4zM63 47l3 5l3-5zM36 56l2.5-4l2.5 4zM59 56l2.5-4l2.5 4z" fill="#fff" stroke-width="1.2"/>' +
+      '<path d="M44 53q6-6 12 0q1 6-6 10q-7-4-6-10z" fill="#FF8FA8" stroke-width="1.8"/><path d="M50 53v5" fill="none" stroke="#E86A88" stroke-width="1.3"/>' +
+      '<g class="bras" style="transform-origin:24px 47px">' + S('path d="M24 47q0-21 26-21q26 0 26 21z"', '#C98A4B', '#A86E36') +
+      '<path d="M33 28v19M67 28v19" fill="none" stroke="#8E95A8" stroke-width="5" stroke-linecap="butt"/><path d="M30.5 29v18M35.5 27v20M64.5 27v20M69.5 29v18" fill="none" stroke-width="1.6"/>' +
+      '<path d="M24 47h52" fill="none"/>' +
+      '<rect x="44" y="62" width="12" height="13" rx="3" fill="#FFC93C"/><path d="M50 66v4" fill="none" stroke-width="2.2"/>' +
+      hi(40, 33, 4, 2, -15) + F({ y: 37, g: 9, r: 3.8, iris: '#FFC93C', m: 'none', by: 43, bg: 15 }) + '</g>'],
+
+    // 15. Goutte d'eau
+    ['Bulline', '<ellipse cx="50" cy="88" rx="26" ry="5" fill="#BDE6FF"/><path d="M30 88q10 3 20 0q10 3 20 0" fill="none" stroke="#6EC6FF" stroke-width="1.4"/>' +
+      '<g fill="#E3F6FF" stroke-width="1.5"><circle cx="18" cy="44" r="4"/><circle cx="83" cy="36" r="3"/><circle cx="85" cy="62" r="5"/></g>' +
+      '<g fill="#fff" stroke="none"><circle cx="16.8" cy="42.8" r="1.2"/><circle cx="83.2" cy="60.6" r="1.6"/></g>' +
+      S('path d="M50 22q24 28 24 44a24 24 0 0 1-48 0q0-16 24-44z"', '#6EC6FF', '#3FA2E8') +
+      '<g fill="#B5E3FF" stroke="none" opacity=".8"><circle cx="64" cy="76" r="3"/><circle cx="60" cy="82" r="1.8"/><circle cx="36" cy="80" r="2"/></g>' +
+      '<ellipse cx="38" cy="54" rx="4" ry="8" fill="#fff" opacity=".65" stroke="none" transform="rotate(25 38 54)"/><circle cx="43" cy="43" r="2" fill="#fff" opacity=".8" stroke="none"/>' +
+      '<path d="M50 22q-6-7 1-11q5 4-1 11z" fill="#8CCB6A" stroke-width="1.6"/>' +
+      F({ y: 64, g: 8, r: 4.5, iris: '#BDE6FF', m: 'open', w: 3 }) +
+      B(S('ellipse cx="76" cy="66" rx="4" ry="5"', '#6EC6FF', '#3FA2E8', 1), 72, 70)],
+
+    // ---------- Nouveaux héros ----------
+    // 16. Chevalier
+    ['Chevalou', hero({
+      feet: '#8E95A8', body: '#4F7DF0', body2: '#3A5FC8',
+      deco: '<path d="M33.5 79h33" fill="none" stroke="#8A5A3C" stroke-width="3.5" stroke-linecap="butt"/><rect x="47" y="76.5" width="6" height="5" rx="1" fill="#FFC93C" stroke-width="1.4"/>' + star(50, 70, 3.5, '#FFE066'),
+      noHead: true,
+      head: '<path d="M50 26q4-16 18-15q-4 3-3 8q-6-1-11 9z" fill="#E8455A"/>' +
+        S('circle cx="50" cy="44" r="20"', '#D5DDE8', '#A3AFC2') +
+        '<rect x="47" y="24" width="6" height="12" rx="3" fill="#FFC93C" stroke-width="1.8"/>' +
+        S('rect x="36" y="38" width="28" height="21" rx="10"', SKIN, SKIN2, 2) +
+        '<g fill="#F0F4F9" stroke-width="1.3"><circle cx="33.5" cy="52" r="1.6"/><circle cx="66.5" cy="52" r="1.6"/></g>' + hi(38, 31, 3.5, 2, -40),
+      face: { y: 47, g: 6.5, r: 3.4, iris: '#4F7DF0', m: 'smile', w: 2.6, by: 53, bg: 10.5 },
+      front: B('<g transform="rotate(18 69 74)"><path d="M66.5 70v-26l2.5-5l2.5 5v26z" fill="#F0F4F9"/><path d="M69 42v26" fill="none" stroke="#C9D3E0" stroke-width="1.2"/>' +
+        '<rect x="61" y="68" width="16" height="4.5" rx="2.2" fill="#FFC93C"/><rect x="67" y="72" width="4" height="8" rx="1.5" fill="#8A5A3C"/></g>' + hand(68, 76), 63, 74) +
+        S('path d="M20 62h22v9q0 11-11 16q-11-5-11-16z"', '#E8455A', '#C7334A', 2) +
+        star(31, 72, 7, '#FFE066') + hi(25, 66, 2, 1.2)
+    })],
+
+    // 17. Magicien
+    ['Magicot', hero({
+      feet: '#5E43C0', body: '#7B5CE0', body2: '#5E43C0',
+      deco: star(42, 76, 2.4, '#FFE066') + star(57, 80, 2, '#FFE066') + '<path d="M58 70a3 3 0 1 0 2 4a2.4 2.4 0 1 1-2-4z" fill="#FFE066" stroke-width="1.2"/>',
+      back: '<path d="M71 90L75 40" fill="none" stroke="' + INK + '" stroke-width="6.5"/><path d="M71 90L75 40" fill="none" stroke="#A8723C" stroke-width="3"/>' +
+        '<circle cx="76" cy="34" r="11" fill="#9EF0FF" opacity=".45" stroke="none"/><path d="M71 41q-2-6 1-9M80 41q2-6-1-9" fill="none" stroke="#A8723C" stroke-width="2"/>' +
+        S('circle cx="76" cy="34" r="6"', '#9EF0FF', '#4FC8E8', 1.5) + hi(74, 32, 1.6, 1),
+      head: S('path d="M36 51q-1 18 14 20q15-2 14-20q-6 5-14 5q-8 0-14-5z"', '#fff', '#DCDCEF', 2) +
+        '<path d="M43 54q3.5-3 7 0q3.5-3 7 0q-3 3.5-7 1.5q-4 2-7-1.5z" fill="#fff" stroke-width="1.6"/>' +
+        S('path d="M33 33q6-14 13-24q6-8 15-5q-6 2-6 8q2 12 12 21z"', '#7B5CE0', '#5E43C0') +
+        '<path d="M34 30q16 5 32 0l1.5 4q-17.5 5.5-35 0z" fill="#FFC93C" stroke-width="1.8"/>' +
+        S('ellipse cx="50" cy="34" rx="25" ry="5.5"', '#7B5CE0', '#5E43C0', 1) + star(46, 20, 3, '#FFE066') + star(56, 12, 2, '#FFE066'),
+      face: { y: 45, g: 7, r: 3.4, iris: '#7B5CE0', m: 'none', by: 50, bg: 11 },
+      front: hand(33, 73) + B(hand(72, 66), 65, 70)
+    })],
+
+    // 18. Elfe archère
+    ['Archette', hero({
+      back: '<g transform="rotate(28 64 60)"><rect x="60" y="47" width="9" height="24" rx="3" fill="#A8723C"/><path d="M62 47l-1-6l3 2zM66 47l0-7l3 3z" fill="#E8455A" stroke-width="1.4"/></g>' +
+        '<path d="M28 50Q12 72 28 94" fill="none" stroke="' + INK + '" stroke-width="6"/><path d="M28 50Q12 72 28 94" fill="none" stroke="#C98A4B" stroke-width="2.6"/>' +
+        '<path d="M28 50V94" fill="none" stroke-width="1"/>' +
+        S('circle cx="50" cy="42" r="23"', '#4CAF6A', '#378A52'),
+      feet: '#8A5A3C', body: '#7CCB8A', body2: '#58AA6C',
+      deco: '<path d="M33.5 77h33" fill="none" stroke="#8A5A3C" stroke-width="3.2" stroke-linecap="butt"/><path d="M44 66l6 6l6-6" fill="none" stroke="#378A52" stroke-width="1.6"/>',
+      under: both('<path d="M33 45l-14-9l11 16z" fill="' + SKIN + '"/>'),
+      head: '<path d="M32 42q2-16 18-17q16 1 18 17q-5-6-9-6q-3 4-9 4q-6 0-9-4q-4 0-9 6z" fill="#FFD46B"/>' +
+        '<path d="M29 44q0-26 21-26q21 0 21 26q-4-13-21-14q-17 1-21 14z" fill="#4CAF6A"/><path d="M50 18q-1-6 4-9" fill="none" stroke="#378A52" stroke-width="2"/>',
+      face: { y: 47, g: 7, r: 3.6, iris: '#4CAF6A', m: 'smile', w: 2.6 },
+      front: hand(29, 72) + B(hand(67, 74), 62, 72)
+    })],
+
+    // 19. Nain
+    ['Barbichu', hero({
+      feet: '#6B4A35', body: '#D9534F', body2: '#B33E3A',
+      deco: '<path d="M33.5 80h33" fill="none" stroke="#6B4A35" stroke-width="3.5" stroke-linecap="butt"/>',
+      back: '<path d="M70 90L74 50" fill="none" stroke="' + INK + '" stroke-width="7"/><path d="M70 90L74 50" fill="none" stroke="#A8723C" stroke-width="3.5"/>' +
+        '<g transform="rotate(6 74 46)">' + S('rect x="64" y="38" width="20" height="13" rx="3"', '#C9D3E0', '#9AA8BC', 1.5) + '<path d="M68 38v13M80 38v13" fill="none" stroke-width="1.3"/></g>',
+      head: S('path d="M32 50q-2 20 10 26q8 4 16 0q12-6 10-26q-5 6-18 6q-13 0-18-6z"', '#E8853A', '#C96A22', 2) +
+        '<path d="M44 62q2 4 0 8M56 62q-2 4 0 8M50 64v9" fill="none" stroke="#C96A22" stroke-width="1.5"/>' +
+        '<circle cx="50" cy="77" r="2.5" fill="#FFC93C" stroke-width="1.5"/>' +
+        '<path d="M41 54q4-4 9-1q5-3 9 1q-4 5-9 2q-5 3-9-2z" fill="#C96A22" stroke-width="1.6"/>' +
+        S('circle cx="50" cy="50" r="3.8"', '#FFB8A0', '#F09A82', 1) +
+        both('<path d="M32 36q-13-1-16-14q7 6 15 5z" fill="#FFF1DC"/>') +
+        S('path d="M30 40q0-19 20-19q20 0 20 19z"', '#C9D3E0', '#9AA8BC', 2) +
+        '<rect x="29" y="37" width="42" height="6" rx="2" fill="#FFC93C" stroke-width="1.8"/><path d="M50 22v15" fill="none" stroke="#9AA8BC" stroke-width="1.5"/>' + hi(39, 29, 3, 1.6, -30),
+      face: { y: 46, g: 7.5, r: 3.4, iris: '#8A5A3C', m: 'none', by: 51, bg: 11 },
+      front: hand(33, 73) + B(hand(71, 70), 65, 72)
+    })],
+
+    // 20. Sorcière
+    ['Sorcinette', hero({
+      back: '<path d="M31 40q-7 26 3 33l7-13zM69 40q7 26-3 33l-7-13z" fill="#E85D3C"/>',
+      feet: '#3D3360', body: '#8E5CC9', body2: '#7043AE',
+      deco: '<path d="M33 86l4-5l4 5l4-5l4 5l4-5l4 5l4-5l4 5l2-3" fill="#3D3360" stroke-width="1.8"/>',
+      head: '<path d="M31 44q1-18 19-19q18 1 19 19q-4-7-10-8q-3 4-9 4q-6 0-9-4q-6 1-10 8z" fill="#E85D3C"/>' +
+        S('path d="M35 30L52 2q2-2 3 1L65 30z"', '#4B3D78', '#33295A', 2) +
+        '<path d="M36 26q14 4 28 0l1.2 4.5q-15 4.5-30.4 0z" fill="#B79CFF" stroke-width="1.8"/><rect x="47" y="25.5" width="6" height="5.5" rx="1" fill="#FFC93C" stroke-width="1.4"/>' +
+        S('ellipse cx="50" cy="31" rx="27" ry="5"', '#4B3D78', '#33295A', 1) + star(57, 14, 2.5, '#FFE066'),
+      face: { y: 47, g: 7, r: 3.6, iris: '#5BBF7A', m: 'open', w: 2.8 },
+      front: '<g fill="#CFF7C2" stroke-width="1.5" opacity=".9"><circle cx="27" cy="52" r="2.5"/><circle cx="31" cy="46" r="1.6"/><circle cx="24" cy="44" r="1.8"/></g>' +
+        '<rect x="25" y="56" width="6" height="7" rx="1.5" fill="#E3F6FF"/><rect x="24" y="53" width="8" height="4" rx="1.5" fill="#A8723C" stroke-width="1.6"/>' +
+        S('circle cx="28" cy="70" r="8"', '#E3F6FF', '#C3E6F5', 1.5) +
+        '<path d="M20.5 71q7.5 3 15 0a7.5 7.5 0 0 1-15 0z" fill="#7CE07C" stroke="none"/><path d="M20 70a8 8 0 0 0 16 0" fill="none" stroke-width="2.2"/>' + hi(25, 67, 1.6, 2.5) +
+        hand(34, 76) + B(hand(67, 74), 62, 72) + star(84, 56, 3, '#FFE066') + star(78, 40, 2, '#B79CFF')
+    })],
+
+    // 21. Fantôme
+    ['Fantômi', '<ellipse cx="50" cy="93" rx="16" ry="2.5" fill="' + INK + '" opacity=".1" stroke="none"/>' +
+      S('path d="M26 54q0-30 24-30q24 0 24 30v24q-4 7-8 0q-4-6-8 0q-4 7-8 0q-4-6-8 0q-4 7-8 0q-4-6-8 0z"', '#FFFFFF', '#DCD8F0') +
+      hi(36, 38, 4.5, 2.5, -40) +
+      S('ellipse cx="26" cy="62" rx="5" ry="7" transform="rotate(30 26 62)"', '#FFFFFF', '#DCD8F0', 1.5) +
+      B('<rect x="68" y="58" width="7" height="12" rx="1.5" fill="#FFF1B8"/><path d="M71.5 58v-3" fill="none" stroke-width="1.5"/>' +
+      '<circle cx="71.5" cy="50" r="7" fill="#FFF3B0" opacity=".6" stroke="none"/><path d="M71.5 55q-4-3 0-8q4 5 0 8z" fill="#FFB13C" stroke-width="1.5"/>' +
+      '<path d="M64 70h15q0 4-7.5 4q-7.5 0-7.5-4z" fill="#C9D3E0"/>' +
+      S('ellipse cx="73" cy="66" rx="5" ry="6.5" transform="rotate(-30 73 66)"', '#FFFFFF', '#DCD8F0', 1.5), 68, 70) +
+      F({ y: 50, g: 8, r: 4.6, iris: '#B79CFF', m: 'open', w: 3.2 }) + star(16, 30, 3, '#B79CFF') + star(86, 28, 2.5, '#B79CFF')],
+
+    // 22. Bébé dragon dans son œuf
+    ['Coquillou', ground(24) +
+      both('<path d="M36 46Q22 30 14 40Q20 42 20 47Q26 45 30 50z" fill="#B8E6A0"/>') +
+      both('<path d="M36 38l-4-8l7 4z" fill="#FFF1DC" stroke-width="1.8"/>') +
+      S('circle cx="50" cy="50" r="18"', '#7CCB6A', '#5AAE4C') + hi(42, 41, 3, 1.8, -35) +
+      '<g transform="rotate(-12 50 32)">' + S('path d="M38 36l4-4l4 4l4-4l4 4l4-4l4 4q-2-12-12-12q-10 0-12 12z"', '#FFF8EC', '#EBD5B5', 1.5) + '<circle cx="46" cy="29" r="1.8" fill="#8CCB6A" stroke="none"/></g>' +
+      F({ y: 48, g: 7.5, r: 4, iris: '#3E7A3A', m: 'open', w: 2.8 }) +
+      S('path d="M24 62l6 5l5-6l5 6l5-6l5 6l5-6l5 6l5-6l5 6l6-5q2 28-26 28q-28 0-26-28z"', '#FFF8EC', '#EBD5B5') +
+      '<g stroke="none" fill="#B8E6A0"><circle cx="34" cy="76" r="3"/><circle cx="62" cy="80" r="3.5"/><circle cx="54" cy="72" r="2"/><circle cx="42" cy="84" r="2"/></g>' +
+      '<path d="M66 70l3 3l-1 4" fill="none" stroke-width="1.4"/>' +
+      S('ellipse cx="32" cy="64" rx="5" ry="4"', '#7CCB6A', '#5AAE4C', 1) + B(S('ellipse cx="68" cy="64" rx="5" ry="4"', '#7CCB6A', '#5AAE4C', 1), 64, 64) +
+      star(84, 30, 3) + star(16, 70, 2.5)],
+
+    // 23. Hydre à trois têtes
+    ['Trihydre', ground(26) +
+      tube('M44 70Q32 64 26 52', '#5FD0C0', 7) + tube('M56 70Q68 64 74 52', '#5FD0C0', 7) + tube('M50 68V40', '#5FD0C0', 8) +
+      '<path d="M64 80q18 4 18-8q-4 2-8 0q0 6-12 4z" fill="#5FD0C0"/>' +
+      S('ellipse cx="42" cy="87" rx="6" ry="4"', '#5FD0C0', '#3FB0A0', 1) + S('ellipse cx="58" cy="87" rx="6" ry="4"', '#5FD0C0', '#3FB0A0', 1) +
+      S('ellipse cx="50" cy="76" rx="18" ry="12"', '#5FD0C0', '#3FB0A0') + S('ellipse cx="50" cy="79" rx="10" ry="7"', '#FFF1C8', '#F2D9A0', 1.5) +
+      '<path d="M43 77h14M44 81h12" fill="none" stroke="#E2C27A" stroke-width="1.3"/>' +
+      '<path d="M18 40l3 5l-5 1z M82 40l-3 5l5 1z" fill="#FFC93C" stroke-width="1.5"/>' +
+      S('circle cx="25" cy="48" r="10"', '#5FD0C0', '#3FB0A0', 2) +
+      '<path d="M44 24l2-8l4 5l4-5l2 8" fill="#FFC93C" stroke-width="1.6"/>' +
+      S('circle cx="50" cy="35" r="12"', '#5FD0C0', '#3FB0A0', 2) +
+      F({ x: 50, y: 34, g: 5, r: 2.9, iris: '#FFE066', m: 'open', w: 2.4, my: 40 }) +
+      F({ x: 25, y: 47, g: 4.2, r: 2.3, happy: true, m: 'smile', w: 2, my: 52 }) +
+      B(S('circle cx="75" cy="48" r="10"', '#5FD0C0', '#3FB0A0', 2) +
+        F({ x: 75, y: 47, g: 4.2, r: 2.4, iris: '#FFE066', m: 'cat', w: 1.8, my: 52 }), 70, 56)],
+
+    // 24. Renard aux trois queues
+    ['Renardeau', ground(22) +
+      B('<g transform="rotate(8 58 80)">' + S('path d="M56 78q-6-26 6-36q8 16-6 36z"', '#F59A3C', '#D97A22', 1.5) + '<path d="M58.6 49q2.4-4 3.4-7q5 7 2 14q-2-5-5.4-7z" fill="#fff"/></g>', 58, 80) +
+      '<g transform="rotate(38 58 80)">' + S('path d="M56 78q-6-26 6-36q8 16-6 36z"', '#F59A3C', '#D97A22', 1.5) + '<path d="M58.6 49q2.4-4 3.4-7q5 7 2 14q-2-5-5.4-7z" fill="#fff"/></g>' +
+      '<g transform="rotate(68 58 80)">' + S('path d="M56 78q-6-26 6-36q8 16-6 36z"', '#F59A3C', '#D97A22', 1.5) + '<path d="M58.6 49q2.4-4 3.4-7q5 7 2 14q-2-5-5.4-7z" fill="#fff"/></g>' +
+      S('path d="M36 88q-4-24 14-26q18 2 14 26z"', '#F59A3C', '#D97A22') +
+      '<path d="M43 64q7 4 14 0q0 14-7 20q-7-6-7-20z" fill="#FFF8EE"/>' +
+      S('ellipse cx="43" cy="87" rx="5" ry="3.5"', '#FFF8EE', '#E8DCC8', 1) + S('ellipse cx="57" cy="87" rx="5" ry="3.5"', '#FFF8EE', '#E8DCC8', 1) +
+      both('<path d="M33 40l-2-18l14 10z" fill="#F59A3C"/><path d="M34 36l-1-9l7 5z" fill="#4A2033" stroke="none"/>') +
+      S('path d="M29 46q0-18 21-18q21 0 21 18q0 7-7 11q-6 4-14 4q-8 0-14-4q-7-4-7-11z"', '#F59A3C', '#D97A22') +
+      '<path d="M29.5 49q8 0 13 5q4 5 7.5 7q-8 0-14-4q-5.5-3-6.5-8zM70.5 49q-8 0-13 5q-4 5-7.5 7q8 0 14-4q5.5-3 6.5-8z" fill="#FFF8EE" stroke="none"/>' +
+      '<path d="M50 34q-3-4 0-7q3 3 0 7z" fill="#B79CFF" stroke-width="1.3"/>' +
+      F({ y: 45, g: 8, r: 3.8, iris: '#FFC93C', m: 'cat', w: 2.2, my: 55 }) + '<ellipse cx="50" cy="53" rx="2" ry="1.4" fill="' + INK + '" stroke="none"/>' +
+      '<circle cx="82" cy="26" r="8" fill="#B5F0FF" opacity=".5" stroke="none"/><path d="M82 32q-7-3-4-10q1 3 3 2q0-5 4-7q4 6 1 11q-1 3-4 4z" fill="#6EC6FF" stroke-width="1.6"/>'],
+
+    // 25. Petit kraken
+    ['Krakou', '<ellipse cx="50" cy="91" rx="26" ry="3" fill="' + INK + '" opacity=".12" stroke="none"/>' +
+      tube('M34 62Q20 74 26 84Q30 88 33 84', '#A77BE8', 6) + B(tube('M66 62Q80 74 74 84Q70 88 67 84', '#A77BE8', 6), 66, 62) +
+      tube('M42 66Q34 80 40 88Q44 90 45 86', '#A77BE8', 6) + tube('M58 66Q66 80 60 88Q56 90 55 86', '#A77BE8', 6) +
+      '<g fill="#E9D9FF" stroke="none"><circle cx="24" cy="76" r="1.3"/><circle cx="76" cy="76" r="1.3"/><circle cx="37" cy="78" r="1.3"/><circle cx="63" cy="78" r="1.3"/></g>' +
+      S('path d="M26 60q0-34 24-34q24 0 24 34q0 8-24 8q-24 0-24-8z"', '#A77BE8', '#8559CC') +
+      '<g fill="#8559CC" stroke="none"><circle cx="34" cy="38" r="2.5"/><circle cx="66" cy="42" r="3"/><circle cx="62" cy="34" r="1.8"/></g>' + hi(37, 34, 4, 2.4, -40) +
+      '<path d="M38 26l-2-10l7 5l7-9l7 9l7-5l-2 10q-12 3-24 0z" fill="#FFC93C" stroke-width="2"/><g stroke-width="1.2"><circle cx="50" cy="20" r="2" fill="#FF5470"/><circle cx="41" cy="22" r="1.3" fill="#6EC6FF"/><circle cx="59" cy="22" r="1.3" fill="#6EC6FF"/></g>' +
+      F({ y: 50, g: 9, r: 4.4, iris: '#E9D9FF', m: 'open', w: 3 }) +
+      '<g fill="#E3F6FF" stroke-width="1.4"><circle cx="84" cy="40" r="3"/><circle cx="88" cy="30" r="2"/><circle cx="16" cy="48" r="2.5"/></g>'],
+
+    // 26. Golem de cristal
+    ['Cristallin', ground(24) +
+      '<path d="M30 56l-6-16l9 10zM70 56l6-16l-9 10z" fill="#FF9EC4"/><path d="M34 54l-1-12l5 9zM66 54l1-12l-5 9z" fill="#7DE3E0"/>' +
+      S('path d="M38 82h9v6h-9zM53 82h9v6h-9z"', '#9B8CFF', '#7A69E8', 1) +
+      S('path d="M32 58l18-8l18 8v20l-18 8l-18-8z"', '#9B8CFF', '#7A69E8') +
+      '<path d="M32 58l18 7l18-7M50 65v21" fill="none" stroke-width="1.5"/><path d="M33 59l17 6.5v19.5l-17-7.5z" fill="#B7ABFF" stroke="none" opacity=".7"/>' +
+      '<circle cx="50" cy="74" r="6" fill="#FFB3D9" opacity=".5" stroke="none"/><path d="M50 69l4 5l-4 5l-4-5z" fill="#FF6F91" stroke-width="1.6"/>' +
+      S('path d="M20 62l7-4l6 6l-3 12l-7 2l-5-6z"', '#9B8CFF', '#7A69E8', 1.5) + B(S('path d="M80 62l-7-4l-6 6l3 12l7 2l5-6z"', '#9B8CFF', '#7A69E8', 1.5), 70, 60) +
+      S('path d="M33 38l9-14h16l9 14l-5 14h-24z"', '#C9B8FF', '#A592F2') +
+      '<path d="M42 24l8 8l8-8M33 38l17-6l17 6" fill="none" stroke-width="1.4"/><path d="M42 24.5l8 7.5l8-7.5z" fill="#E8E0FF" stroke="none"/>' +
+      F({ y: 42, g: 7, r: 3.5, iris: '#FF9EC4', m: 'smile', w: 2.6 }) + star(14, 40, 3, '#fff') + star(86, 44, 3.5, '#fff') + star(80, 22, 2, '#fff')],
+
+    // 27. Petit troll
+    ['Trollinet', ground(24) +
+      
+      S('ellipse cx="41" cy="86" rx="7" ry="4.5"', '#6FB7C7', '#4E97A8', 1) + S('ellipse cx="59" cy="86" rx="7" ry="4.5"', '#6FB7C7', '#4E97A8', 1) +
+      both('<path d="M30 48q-16-2-20-12q10 0 22 6z" fill="#6FB7C7"/><path d="M28 46q-9-1-13-6q6 0 13 3z" fill="#FF9EC4" stroke="none"/>') +
+      S('circle cx="50" cy="60" r="23"', '#6FB7C7', '#4E97A8') +
+      S('ellipse cx="50" cy="72" rx="13" ry="9"', '#A8DCE5', '#86C4CF', 1.5) +
+      '<path d="M32 76q18 8 36 0l-2 8q-16 5-32 0z" fill="#B5763A"/><g fill="#8A5A3C" stroke="none"><circle cx="40" cy="81" r="1.5"/><circle cx="52" cy="82" r="1.5"/><circle cx="61" cy="80" r="1.3"/></g>' +
+      '<path d="M44 38q-6-10 0-12q2 6 6 4q0-8 6-8q-2 6 2 10q4-4 8-2q-4 4-6 10z" fill="#FF8F3C" stroke-width="2"/>' +
+      S('circle cx="50" cy="56" r="5"', '#86C4CF', '#5FA5B3', 1.5) + hi(39, 44, 3.5, 2, -35) +
+      F({ y: 50, g: 9, r: 3.8, iris: '#FFE066', m: 'smile', my: 63, w: 4, by: 57, bg: 16 }) +
+      '<path d="M45 64.5l1.2-3l1.4 3M52.4 64.5l1.4-3l1.2 3" fill="#fff" stroke-width="1.2"/>' +
+      B('<g transform="rotate(28 72 72)"><path d="M69 76q-3-28 5-34q10 4 5 34z" fill="#A8723C"/><path d="M71 52q3 2 6 0M72 62q2 2 5 0" fill="none" stroke="#7A5030" stroke-width="1.5"/></g>' + S('ellipse cx="71" cy="70" rx="5" ry="5.5"', '#6FB7C7', '#4E97A8', 1), 67, 68) + S('ellipse cx="29" cy="68" rx="5" ry="5.5"', '#6FB7C7', '#4E97A8', 1)],
+
+    // 28. Chauve-souris
+    ['Chauvi', '<ellipse cx="50" cy="92" rx="14" ry="2.5" fill="' + INK + '" opacity=".1" stroke="none"/>' +
+      ('<path d="M34 54Q20 34 4 44Q10 48 10 54Q16 52 19 58Q24 54 28 61Q31 58 35 62z" fill="#7A6E94"/><path d="M33 55L8 46M33 57L17 55M33 59L26 60" fill="none" stroke-width="1.3"/>') + B(mir('<path d="M34 54Q20 34 4 44Q10 48 10 54Q16 52 19 58Q24 54 28 61Q31 58 35 62z" fill="#7A6E94"/><path d="M33 55L8 46M33 57L17 55M33 59L26 60" fill="none" stroke-width="1.3"/>'), 66, 58) +
+      both('<path d="M34 40l-4-18l14 10z" fill="#5B5070"/><path d="M35 36l-2-9l7 5z" fill="#FF9EC4" stroke="none"/>') +
+      '<path d="M45 77l-1 5M55 77l1 5" fill="none" stroke-width="2.2"/>' +
+      S('circle cx="50" cy="56" r="20"', '#5B5070', '#463D58') + S('ellipse cx="50" cy="66" rx="10" ry="8"', '#8E84A8', '#776D92', 1.5) +
+      '<path d="M44 38q6 4 12 0" fill="none" stroke="#7A6E94" stroke-width="1.6"/>' + hi(40, 46, 3.5, 2, -35) +
+      F({ y: 53, g: 8, r: 4.4, iris: '#FF8FA8', m: 'smile', w: 3.2 }) +
+      '<path d="M47 60.5l1.2 2.6l1.2-2.6M50.6 60.5l1.2 2.6l1.2-2.6" fill="#fff" stroke-width="1"/>' +
+      star(18, 24, 3, '#FFE066') + star(82, 22, 3.5, '#FFE066')],
+
+    // 29. Gnome à la lanterne
+    ['Gnomi', hero({
+      feet: '#8A5A3C', body: '#4F8FE8', body2: '#3A70C8',
+      deco: '<path d="M33.5 79h33" fill="none" stroke="#8A5A3C" stroke-width="3" stroke-linecap="butt"/>',
+      head: S('path d="M33 50q-1 22 17 26q18-4 17-26q-6 7-17 7q-11 0-17-7z"', '#fff', '#DCDCEF', 2) +
+        '<path d="M42 56q4-3 8 0q4-3 8 0q-4 4-8 1.5q-4 2.5-8-1.5z" fill="#fff" stroke-width="1.6"/>' +
+        S('circle cx="50" cy="51" r="4.5"', '#FF9E8A', '#EE7F6A', 1) +
+        S('path d="M29 42q2-30 28-38q-4 12 2 20q8 10 12 18q-21 6-42 0z"', '#E8455A', '#C7334A') + hi(40, 26, 3, 1.6, -45) +
+        '<path d="M29 42q21 6 42 0" fill="none" stroke="#C7334A" stroke-width="1.4"/>',
+      face: { y: 46, g: 7.5, r: 3.3, iris: '#4F8FE8', m: 'none', by: 51, bg: 12 },
+      front: hand(33, 73) +
+        B('<circle cx="72" cy="78" r="11" fill="#FFF3B0" opacity=".55" stroke="none"/>' +
+        '<path d="M68 70q4-6 8 0" fill="none" stroke-width="1.8"/><rect x="66" y="70" width="12" height="3" rx="1.5" fill="#3D3360" stroke-width="1.5"/>' +
+        '<rect x="67" y="73" width="10" height="11" rx="2" fill="#FFE066"/><path d="M72 76q-2 2 0 5q2-3 0-5z" fill="#FF8F3C" stroke="none"/>' +
+        '<rect x="66" y="84" width="12" height="3" rx="1.5" fill="#3D3360" stroke-width="1.5"/>' + hand(70, 69), 65, 70)
+    })],
+
+    // 30. Yéti
+    ['Yétou', ground(26) +
+      both('<path d="M37 41l-6-12l10 6z" fill="#C9D3E0" stroke-width="1.8"/>') +
+      S('ellipse cx="41" cy="86" rx="7" ry="4.5"', '#BFE3F7', '#94CBEA', 1) + S('ellipse cx="59" cy="86" rx="7" ry="4.5"', '#BFE3F7', '#94CBEA', 1) +
+      S(fluff(50, 60, 24, 25, 16, 6), '#FFFFFF', '#D8E6F2') +
+      S('ellipse cx="50" cy="52" rx="14" ry="12"', '#BFE3F7', '#94CBEA', 1.5) +
+      F({ y: 50, g: 6.5, r: 3.6, iris: '#4A8FE0', m: 'open', w: 3, my: 56 }) +
+      S(fluff(26, 68, 6, 7, 8, 3), '#FFFFFF', '#D8E6F2', 1) +
+      B(S('circle cx="73" cy="70" r="8"', '#F5FBFF', '#CFE4F2', 1.5) + hi(70, 67, 2, 1.4) + S(fluff(70, 74, 5, 6, 8, 2.6), '#FFFFFF', '#D8E6F2', 1), 68, 66) +
+      '<g fill="none" stroke="#8FD3F4" stroke-width="1.6"><path d="M14 30v10M9 35h10M10.5 31.5l7 7M17.5 31.5l-7 7"/><path d="M86 22v8M82 26h8M83 23l6 6M89 23l-6 6"/></g>']
+  ];
+
+  var PROFIL = 'marc.profil';
+  var profil = document.getElementById('profil');
+  var form = document.getElementById('profilForm');
+  var prenomInput = document.getElementById('prenomInput');
+  var profilOk = document.getElementById('profilOk');
+  var profilAnnuler = document.getElementById('profilAnnuler');
+  var avatarsEl = document.getElementById('avatars');
+  var mascotte = document.getElementById('mascotte');
+  var POMPON_SVG = mascotte.innerHTML, POMPON_VB = mascotte.getAttribute('viewBox');
+  var POMPON_LABEL = mascotte.getAttribute('aria-label');
+  var mode = 'reglages', etape = 1, choix = 'Pompon', copie = 0;
+
+  function lireProfil() {
+    try {
+      var v = JSON.parse(localStorage.getItem(PROFIL)) || {};
+      return { prenom: typeof v.prenom === 'string' ? v.prenom : '', avatar: typeof v.avatar === 'string' ? v.avatar : 'Pompon' };
+    } catch (e) { return { prenom: '', avatar: 'Pompon' }; }
+  }
+  function nettoyer(t) {
+    t = String(t).replace(/\s+/g, ' ').trim().slice(0, 20);
+    return t ? t.charAt(0).toLocaleUpperCase('fr') + t.slice(1) : '';
+  }
+  function creature(nom) {
+    for (var i = 0; i < CREATURES.length; i++) if (CREATURES[i][0] === nom) return CREATURES[i];
+    return null;
+  }
+  // Un même dessin peut être affiché deux fois : on rend ses identifiants uniques.
+  function dessin(c) {
+    var n = ++copie;
+    return '<g stroke="' + INK + '" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">' +
+      c[1].replace(/kc(\d+)/g, 'kc$1-' + n) + '</g>';
+  }
+  function afficherProfil() {
+    var p = lireProfil(), c = creature(p.avatar);
+    document.getElementById('prenom').textContent = p.prenom ? ' ' + p.prenom : '';
+    if (c) {
+      mascotte.setAttribute('viewBox', '0 0 100 100');
+      mascotte.innerHTML = dessin(c);
+      mascotte.classList.add('creature');
+      mascotte.setAttribute('aria-label', c[0] + ', ton compagnon, qui dit bonjour');
+    } else {
+      mascotte.setAttribute('viewBox', POMPON_VB);
+      mascotte.innerHTML = POMPON_SVG;
+      mascotte.classList.remove('creature');
+      mascotte.setAttribute('aria-label', POMPON_LABEL);
+    }
+  }
+  function remplirAvatars() {
+    var liste = [['Pompon', null]].concat(CREATURES);
+    avatarsEl.textContent = '';
+    liste.forEach(function (c) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'avatar'; b.setAttribute('role', 'radio');
+      b.dataset.nom = c[0];
+      b.setAttribute('aria-checked', String(c[0] === choix));
+      b.innerHTML = c[1] === null
+        ? '<svg viewBox="' + POMPON_VB + '" aria-hidden="true">' + POMPON_SVG.replace(/class="(arm|eyes)"/g, '') + '</svg>'
+        : '<svg viewBox="0 0 100 100" aria-hidden="true">' + dessin(c) + '</svg>';
+      var nom = document.createElement('span'); nom.textContent = c[0];
+      b.appendChild(nom);
+      avatarsEl.appendChild(b);
+    });
+  }
+  avatarsEl.addEventListener('click', function (e) {
+    var b = e.target.closest('.avatar');
+    if (!b) return;
+    choix = b.dataset.nom;
+    avatarsEl.querySelectorAll('.avatar').forEach(function (x) { x.setAttribute('aria-checked', String(x === b)); });
+    b.classList.remove('anim-bravo'); void b.offsetWidth; b.classList.add('anim-bravo');
+  });
+
+  function montrer() {
+    var accueil = mode === 'accueil';
+    form.classList.toggle('profil-seul', accueil);
+    form.querySelector('.etape-prenom').hidden = accueil && etape !== 1;
+    form.querySelector('.etape-avatar').hidden = accueil && etape !== 2;
+    document.getElementById('profilTitre').textContent = !accueil ? 'Réglages'
+      : etape === 1 ? 'Bienvenue\u00a0! 👋' : 'Coucou ' + nettoyer(prenomInput.value) + '\u00a0!';
+    document.getElementById('profilQuestion').textContent = accueil ? 'Comment tu t\u2019appelles\u00a0?' : 'Ton prénom';
+    document.getElementById('avatarQuestion').textContent = accueil ? 'Choisis ton compagnon\u00a0:' : 'Ton compagnon';
+    document.getElementById('profilNote').hidden = accueil && etape === 2;
+    profilOk.textContent = !accueil ? 'Enregistrer' : etape === 1 ? 'Suivant' : 'C\u2019est parti\u00a0!';
+    profilAnnuler.textContent = accueil ? 'Retour' : 'Annuler';
+    profilAnnuler.hidden = accueil && etape === 1;
+    profilOk.disabled = !nettoyer(prenomInput.value);
+    form.querySelector('.profil-corps').scrollTop = 0;
+  }
+  function ouvrirProfil(accueil) {
+    var p = lireProfil();
+    mode = accueil ? 'accueil' : 'reglages'; etape = 1; choix = p.avatar;
+    prenomInput.value = p.prenom;
+    remplirAvatars();
+    montrer();
+    if (profil.showModal) profil.showModal(); else profil.setAttribute('open', '');
+    if (!accueil) { prenomInput.blur(); var sel = avatarsEl.querySelector('[aria-checked="true"]'); if (sel) sel.scrollIntoView({ block: 'nearest' }); form.querySelector('.profil-corps').scrollTop = 0; }
+  }
+  function fermerProfil() { profil.close ? profil.close() : profil.removeAttribute('open'); }
+
+  prenomInput.addEventListener('input', function () { profilOk.disabled = !nettoyer(prenomInput.value); });
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var p = nettoyer(prenomInput.value);
+    if (!p) return;
+    if (mode === 'accueil' && etape === 1) { etape = 2; prenomInput.blur(); montrer(); return; }
+    try { localStorage.setItem(PROFIL, JSON.stringify({ prenom: p, avatar: choix })); } catch (err) {}
+    afficherProfil();
+    fermerProfil();
+  });
+  profilAnnuler.addEventListener('click', function () {
+    if (mode === 'accueil') { etape = 1; montrer(); prenomInput.focus(); } else fermerProfil();
+  });
+  // La première fois, la fenêtre ne se ferme pas sans prénom (touche Échap, bouton retour).
+  profil.addEventListener('cancel', function (e) { if (mode === 'accueil') e.preventDefault(); });
+  document.getElementById('reglagesBtn').addEventListener('click', function () { ouvrirProfil(false); });
+
+  afficherProfil();
+  if (!lireProfil().prenom) ouvrirProfil(true);
 
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
     window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
