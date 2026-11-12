@@ -375,6 +375,29 @@ h1 .heart { color: var(--pompon); }
 }
 .app .badge-nouveau { position: absolute; top: -12px; right: 18px; }
 
+/* Les thèmes : raccourcis en haut, puis une section par thème */
+.raccourcis { list-style: none; margin: 0 0 22px; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); gap: 10px; }
+.raccourcis a {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  min-height: 72px; padding: 6px 4px;
+  background: var(--t); color: var(--on-sun);
+  border: var(--bord) solid var(--line); border-radius: var(--r-touche);
+  box-shadow: 0 4px 0 var(--line);
+  font: 700 1rem var(--display); text-decoration: none; text-align: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.raccourcis a:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+.raccourcis .emoji { font-size: 28px; line-height: 1; }
+.theme { margin: 0 0 26px; scroll-margin-top: 12px; }
+.theme-titre { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; }
+.theme-titre .emoji {
+  flex: none; width: 46px; height: 46px; display: grid; place-items: center; font-size: 26px;
+  background: var(--t); border: var(--bord) solid var(--line); border-radius: 50%;
+}
+.theme-titre .nb { margin-left: auto; }
+.reprendre { color: var(--ink); font-weight: 800; text-decoration: none; white-space: nowrap;
+  border-bottom: 3px solid var(--pompon); }
+
 /* Installer */
 .install {
   margin-top: 26px;
@@ -473,13 +496,14 @@ dialog li b { white-space: nowrap; }
     </svg>
     <div class="bulle">
       <h1>Coucou<span id="prenom"></span>&nbsp;<span class="heart">♥</span></h1>
-      <p>On joue à quoi aujourd'hui&nbsp;?</p>
+      <p id="question">On joue à quoi aujourd'hui&nbsp;?</p>
     </div>
     <button class="rond" id="reglagesBtn" type="button" aria-label="Réglages : changer de prénom">⚙</button>
   </header>
 
   <main>
-    <ul class="apps" id="apps" aria-label="Mes applis"></ul>
+    <nav aria-label="Thèmes"><ul class="raccourcis" id="raccourcis"></ul></nav>
+    <div id="apps"></div>
 
     <section class="install" id="install" aria-label="Installer">
       <button class="btn btn-soleil" id="installBtn" type="button">📲 Mettre sur l'écran d'accueil</button>
@@ -531,8 +555,25 @@ dialog li b { white-space: nowrap; }
   var NEW_DAYS = 14;
   // Badge « Nouveau ! » seulement pour les applis créées après cette date (pas pour les applis déjà là le 1er novembre 2026).
   var NEW_AFTER = Date.parse('2026-11-01T18:40:00Z');
-  var COLORS = ['var(--v-lilas)', 'var(--v-ciel)', 'var(--v-menthe)', 'var(--v-soleil)', 'var(--v-rose)', 'var(--v-peche)'];
   var EMOJI = ['🌟', '🎈', '🍓', '🐣', '🌈', '🍀'];
+
+  // Les thèmes de l'accueil, dans l'ordre d'affichage.
+  // Une appli choisit son thème dans sa page : <meta name="appli-theme" content="lire">
+  var THEMES = [
+    { id: 'lire',   court: 'Lire',   titre: 'Lire et réciter',      emoji: '📖', couleur: 'var(--v-ciel)' },
+    { id: 'ecrire', court: 'Écrire', titre: 'Écrire sans fautes',   emoji: '✏️', couleur: 'var(--v-rose)' },
+    { id: 'maths',  court: 'Maths',  titre: 'Maths',                emoji: '🔢', couleur: 'var(--v-soleil)' },
+    { id: 'monde',  court: 'Monde',  titre: 'Découvrir le monde',   emoji: '🌍', couleur: 'var(--v-menthe)' },
+    { id: 'autres', court: 'Autres', titre: 'Autres applis',        emoji: '✨', couleur: 'var(--v-lilas)' }
+  ];
+  // Thème des applis qui n'ont pas encore la balise appli-theme (la balise gagne si elle existe).
+  var THEME_PAR_DEFAUT = {
+    'petites-histoires': 'lire', 'fluence': 'lire', 'par-coeur': 'lire',
+    'le-bon-son': 'ecrire', 'mots-a-retenir': 'ecrire', 'detective-des-accords': 'ecrire', 'couper-les-mots': 'ecrire',
+    'tables-en-cartes': 'maths', 'tic-tac': 'maths',
+    'quiz-carte-europe': 'monde'
+  };
+  var DERNIERE = 'marc.accueil.derniere'; // dernière appli ouverte depuis l'accueil
 
   // Liste de secours, utilisée seulement si rien n'a encore pu être chargé.
   var FALLBACK = [
@@ -541,6 +582,7 @@ dialog li b { white-space: nowrap; }
   ];
 
   var listEl = document.getElementById('apps');
+  var raccourcisEl = document.getElementById('raccourcis');
   var statusEl = document.getElementById('status');
 
   function read() {
@@ -550,56 +592,107 @@ dialog li b { white-space: nowrap; }
     try { localStorage.setItem(KEY, JSON.stringify({ apps: apps, at: Date.now() })); } catch (e) {}
   }
 
+  function themeDe(a) {
+    var id = a.theme || THEME_PAR_DEFAUT[a.repo];
+    return THEMES.some(function (t) { return t.id === id; }) ? id : 'autres';
+  }
+
   function render(apps) {
     listEl.textContent = '';
-    apps.forEach(function (a, i) {
-      var li = document.createElement('li');
-      var link = document.createElement('a');
-      link.className = 'app anim-apparait';
-      link.href = a.url;
-      link.dataset.repo = a.repo;
-      link.style.setProperty('--c', a.color || COLORS[i % COLORS.length]);
-      link.style.animationDelay = (i * 70) + 'ms';
-
-      var icon;
-      if (a.icon) {
-        icon = document.createElement('img');
-        icon.src = a.icon + (a.icon.indexOf('?') < 0 ? '?hub=1' : '&hub=1');
-        icon.alt = '';
-        icon.width = 74; icon.height = 74;
-        icon.onerror = function () {
-          var s = document.createElement('span');
-          s.className = 'app-icon'; s.textContent = EMOJI[i % EMOJI.length]; s.setAttribute('aria-hidden', 'true');
-          icon.replaceWith(s);
-        };
-      } else {
-        icon = document.createElement('span');
-        icon.textContent = EMOJI[i % EMOJI.length];
-        icon.setAttribute('aria-hidden', 'true');
-      }
-      icon.className = 'app-icon';
-
-      var text = document.createElement('span');
-      text.className = 'app-text';
-      var name = document.createElement('span');
-      name.className = 'app-name'; name.textContent = a.name;
-      var desc = document.createElement('span');
-      desc.className = 'app-desc'; desc.textContent = a.description || '';
-      text.append(name, desc);
-
-      var go = document.createElement('span');
-      go.className = 'app-go'; go.textContent = '▶'; go.setAttribute('aria-hidden', 'true');
-
-      link.append(icon, text, go);
-      if (a.created && Date.parse(a.created) > NEW_AFTER && Date.now() - Date.parse(a.created) < NEW_DAYS * 864e5) {
-        var b = document.createElement('span');
-        b.className = 'badge-nouveau'; b.textContent = 'Nouveau !';
-        link.appendChild(b);
-      }
-      li.appendChild(link);
-      listEl.appendChild(li);
+    raccourcisEl.textContent = '';
+    var i = 0;
+    THEMES.forEach(function (t) {
+      var liste = apps.filter(function (a) { return themeDe(a) === t.id; });
+      if (!liste.length) return;
+      var sec = document.createElement('section');
+      sec.className = 'theme'; sec.id = 'theme-' + t.id;
+      sec.style.setProperty('--t', t.couleur);
+      var h = document.createElement('h2');
+      h.className = 'theme-titre';
+      h.innerHTML = '<span class="emoji" aria-hidden="true"></span><span class="nom"></span><span class="pastille nb"></span>';
+      h.querySelector('.emoji').textContent = t.emoji;
+      h.querySelector('.nom').textContent = t.titre;
+      h.querySelector('.nb').textContent = liste.length + (liste.length > 1 ? ' applis' : ' appli');
+      var ul = document.createElement('ul');
+      ul.className = 'apps'; ul.setAttribute('aria-label', t.titre);
+      sec.append(h, ul);
+      listEl.appendChild(sec);
+      var r = document.createElement('li');
+      r.innerHTML = '<a><span class="emoji" aria-hidden="true"></span><span></span></a>';
+      r.firstChild.href = '#theme-' + t.id;
+      r.firstChild.style.setProperty('--t', t.couleur);
+      r.querySelector('.emoji').textContent = t.emoji;
+      r.firstChild.lastChild.textContent = t.court;
+      raccourcisEl.appendChild(r);
+      liste.forEach(function (a) { carte(a, i++, ul, t.couleur); });
     });
+    afficherDerniere(apps);
   }
+
+  function carte(a, i, ul, couleur) {
+    var li = document.createElement('li');
+    var link = document.createElement('a');
+    link.className = 'app anim-apparait';
+    link.href = a.url;
+    link.dataset.repo = a.repo;
+    link.style.setProperty('--c', couleur);
+    link.style.animationDelay = (i * 70) + 'ms';
+
+    var icon;
+    if (a.icon) {
+      icon = document.createElement('img');
+      icon.src = a.icon + (a.icon.indexOf('?') < 0 ? '?hub=1' : '&hub=1');
+      icon.alt = '';
+      icon.width = 74; icon.height = 74;
+      icon.onerror = function () {
+        var s = document.createElement('span');
+        s.className = 'app-icon'; s.textContent = EMOJI[i % EMOJI.length]; s.setAttribute('aria-hidden', 'true');
+        icon.replaceWith(s);
+      };
+    } else {
+      icon = document.createElement('span');
+      icon.textContent = EMOJI[i % EMOJI.length];
+      icon.setAttribute('aria-hidden', 'true');
+    }
+    icon.className = 'app-icon';
+
+    var text = document.createElement('span');
+    text.className = 'app-text';
+    var name = document.createElement('span');
+    name.className = 'app-name'; name.textContent = a.name;
+    var desc = document.createElement('span');
+    desc.className = 'app-desc'; desc.textContent = a.description || '';
+    text.append(name, desc);
+
+    var go = document.createElement('span');
+    go.className = 'app-go'; go.textContent = '▶'; go.setAttribute('aria-hidden', 'true');
+
+    link.append(icon, text, go);
+    if (a.created && Date.parse(a.created) > NEW_AFTER && Date.now() - Date.parse(a.created) < NEW_DAYS * 864e5) {
+      var b = document.createElement('span');
+      b.className = 'badge-nouveau'; b.textContent = 'Nouveau !';
+      link.appendChild(b);
+    }
+    li.appendChild(link);
+    ul.appendChild(li);
+  }
+
+  // « On continue Tic-tac ? » : la dernière appli ouverte depuis l'accueil.
+  function afficherDerniere(apps) {
+    var repo = null;
+    try { repo = localStorage.getItem(DERNIERE); } catch (e) {}
+    var a = apps.filter(function (x) { return x.repo === repo; })[0];
+    var q = document.getElementById('question');
+    if (!a) { q.textContent = 'On joue à quoi aujourd\u2019hui\u00a0?'; return; }
+    q.textContent = 'On continue ';
+    var l = document.createElement('a');
+    l.className = 'reprendre'; l.href = a.url; l.dataset.repo = a.repo; l.textContent = a.name;
+    q.append(l, '\u00a0?');
+  }
+  document.addEventListener('click', function (e) {
+    var l = e.target.closest && e.target.closest('a[data-repo]');
+    if (l) try { localStorage.setItem(DERNIERE, l.dataset.repo); } catch (err) {}
+  });
 
   function timeout(ms) {
     return new Promise(function (_, no) { setTimeout(function () { no(new Error('timeout')); }, ms); });
@@ -647,6 +740,8 @@ dialog li b { white-space: nowrap; }
       // Une appli de la collection le dit dans sa page : <meta name="appli-marc" content="oui">
       // (ou porte le sujet « appli-marc » sur GitHub).
       if (!doc.querySelector('meta[name="appli-marc"]') && (repo.topics || []).indexOf(TOPIC) < 0) return null;
+      var th = doc.querySelector('meta[name="appli-theme"]');
+      if (th) a.theme = th.getAttribute('content').trim().toLowerCase();
       var t = doc.querySelector('title');
       if (t && t.textContent.trim()) a.name = t.textContent.split(/ [—–|] /)[0].trim();
       var apple = doc.querySelector('link[rel="apple-touch-icon"]');
