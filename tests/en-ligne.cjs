@@ -62,6 +62,9 @@ async function checkHome(browser) {
     await page.waitForTimeout(800);
     const info = await page.evaluate(() => ({
       side: document.documentElement.scrollWidth - window.innerWidth,
+      themes: document.querySelectorAll('.theme-btn').length,
+      fermes: [...document.querySelectorAll('.theme-btn')].every(b => b.getAttribute('aria-expanded') === 'false') &&
+        ![...document.querySelectorAll('a.app')].some(a => a.offsetParent),
       apps: [...document.querySelectorAll('a.app')].map(a => ({
         href: a.href,
         name: a.querySelector('.app-name').textContent,
@@ -81,10 +84,21 @@ async function checkHome(browser) {
         /Coucou Test/.test(document.querySelector('h1').textContent) &&
         /Braisou/.test(document.getElementById('mascotte').getAttribute('aria-label')));
     }
+    // Thèmes : fermés au départ, un toucher en ouvre un (et un seul).
+    await page.click('.theme-btn');
+    await page.waitForTimeout(600);
+    const ouvre = await page.evaluate(() => {
+      const b = document.querySelectorAll('.theme-btn[aria-expanded="true"]');
+      return b.length === 1 && [...document.getElementById(b[0].getAttribute('aria-controls')).querySelectorAll('a.app')].every(a => a.offsetParent) &&
+        document.documentElement.scrollWidth - window.innerWidth <= 0;
+    });
+    await page.screenshot({ path: `captures/theme-ouvert-${w}x${h}.png`, fullPage: true });
+    const themesOk = info.themes >= 3 && info.fermes && ouvre;
     const badIcons = info.apps.filter(a => !a.icon).map(a => a.name);
-    ok(loaded && profil && info.apps.length >= MIN_APPS && info.side <= 0 && !badIcons.length && !errors.length,
+    ok(loaded && profil && themesOk && info.apps.length >= MIN_APPS && info.side <= 0 && !badIcons.length && !errors.length,
       `${w}×${h} : ${loaded ? 'liste à jour depuis GitHub' : 'liste NON mise à jour depuis GitHub'}, ${info.apps.length} applis` +
       (profil ? ', profil OK' : ', fenêtre de profil en panne') +
+      (themesOk ? `, ${info.themes} thèmes fermés au départ, ouverture OK` : `, thèmes en panne (${info.themes} thèmes, fermés : ${info.fermes}, ouverture : ${ouvre})`) +
       (info.side > 0 ? `, déborde de ${info.side} px sur le côté` : '') +
       (badIcons.length ? `, icône manquante : ${badIcons.join(', ')}` : '') +
       (errors.length ? `, erreurs console : ${errors.join(' | ')}` : ''));

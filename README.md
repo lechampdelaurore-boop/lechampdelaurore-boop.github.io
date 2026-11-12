@@ -18,6 +18,18 @@ La liste se met à jour toute seule. À chaque ouverture, la page demande à Git
 
 (ou qui portent le sujet GitHub `appli-marc`). Le nom, la description, l'icône et la couleur sont lus dans le `manifest.webmanifest` de l'appli. Une appli créée il y a moins de 14 jours porte un badge « Nouveau ! ». La dernière liste est gardée dans le navigateur pour fonctionner hors ligne.
 
+### Ranger l'appli dans un thème
+
+L'accueil range les applis par thème, dans des blocs fermés au départ qui s'ouvrent d'un toucher (un seul ouvert à la fois). Une appli choisit son thème avec une deuxième balise :
+
+```html
+<meta name="appli-theme" content="ecrire">
+```
+
+Thèmes possibles : `lire` (Lire et réciter), `ecrire` (Écrire sans fautes), `maths` (Maths), `monde` (Découvrir le monde). Sans balise ou avec un thème inconnu, l'appli va dans « Autres applis ». Pour les applis plus anciennes, le thème est donné dans `THEME_PAR_DEFAUT` (dans `index.html`) ; la balise de l'appli gagne toujours. Pour ajouter un thème, compléter `THEMES` dans `index.html`.
+
+La bulle du compagnon propose la dernière appli ouverte depuis l'accueil (« On continue … ? »).
+
 Pour qu'une nouvelle appli soit propre :
 
 - `manifest.webmanifest` avec `id`, `name`, `short_name`, `description`, `start_url` et `scope` à `./`, `display: standalone`, icônes PNG 192 et 512 (`any`) et une icône `maskable` ;
