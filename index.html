@@ -375,26 +375,36 @@ h1 .heart { color: var(--pompon); }
 }
 .app .badge-nouveau { position: absolute; top: -12px; right: 18px; }
 
-/* Les thèmes : raccourcis en haut, puis une section par thème */
-.raccourcis { list-style: none; margin: 0 0 22px; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); gap: 10px; }
-.raccourcis a {
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-  min-height: 72px; padding: 6px 4px;
-  background: var(--t); color: var(--on-sun);
-  border: var(--bord) solid var(--line); border-radius: var(--r-touche);
-  box-shadow: 0 4px 0 var(--line);
-  font: 700 1rem var(--display); text-decoration: none; text-align: center;
+/* Les thèmes : un bloc par thème, fermé au départ, qui s'ouvre d'un toucher */
+.themes { display: grid; gap: 14px; }
+.theme-titre { margin: 0; font-size: 1.3rem; }
+.theme-btn {
+  display: flex; align-items: center; gap: 12px; width: 100%; min-height: 84px; padding: 12px 14px;
+  background: var(--t); color: var(--on-sun); text-align: left; cursor: pointer;
+  border: var(--bord) solid var(--line); border-radius: var(--r-carte);
+  box-shadow: var(--ombre-carte); font: inherit;
   -webkit-tap-highlight-color: transparent;
+  transition: transform .12s ease, box-shadow .12s ease;
 }
-.raccourcis a:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
-.raccourcis .emoji { font-size: 28px; line-height: 1; }
-.theme { margin: 0 0 26px; scroll-margin-top: 12px; }
-.theme-titre { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; }
-.theme-titre .emoji {
-  flex: none; width: 46px; height: 46px; display: grid; place-items: center; font-size: 26px;
-  background: var(--t); border: var(--bord) solid var(--line); border-radius: 50%;
+.theme-btn { scroll-margin-top: 12px; }
+.theme-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--line); }
+.theme-btn .emoji {
+  flex: none; width: 56px; height: 56px; display: grid; place-items: center; font-size: 32px;
+  background: var(--surface); border: var(--bord) solid var(--line); border-radius: 50%;
 }
-.theme-titre .nb { margin-left: auto; }
+.theme-btn .milieu { flex: 1; min-width: 0; }
+.theme-btn .nom { display: block; font: 700 1.3rem/1.1 var(--display); }
+.theme-btn .mini { display: flex; gap: 4px; margin-top: 6px; }
+.theme-btn .mini img { width: 26px; height: 26px; border-radius: 8px; border: 2px solid var(--line); background: var(--surface); }
+.theme-btn .fleche {
+  flex: none; width: 40px; height: 40px; display: grid; place-items: center; font-size: 16px;
+  background: var(--surface); color: var(--ink); border: var(--bord) solid var(--line); border-radius: 50%;
+  transition: transform .2s var(--ressort);
+}
+.theme-btn[aria-expanded="true"] .fleche { transform: rotate(180deg); }
+.theme-btn { position: relative; }
+.theme-btn .badge-nouveau { position: absolute; top: -12px; right: 64px; }
+.theme .apps { margin: 14px 0 6px; padding-left: 14px; border-left: 4px dotted var(--t); }
 .reprendre { color: var(--ink); font-weight: 800; text-decoration: none; white-space: nowrap;
   border-bottom: 3px solid var(--pompon); }
 
@@ -502,8 +512,7 @@ dialog li b { white-space: nowrap; }
   </header>
 
   <main>
-    <nav aria-label="Thèmes"><ul class="raccourcis" id="raccourcis"></ul></nav>
-    <div id="apps"></div>
+    <div class="themes" id="apps"></div>
 
     <section class="install" id="install" aria-label="Installer">
       <button class="btn btn-soleil" id="installBtn" type="button">📲 Mettre sur l'écran d'accueil</button>
@@ -582,7 +591,6 @@ dialog li b { white-space: nowrap; }
   ];
 
   var listEl = document.getElementById('apps');
-  var raccourcisEl = document.getElementById('raccourcis');
   var statusEl = document.getElementById('status');
 
   function read() {
@@ -597,10 +605,14 @@ dialog li b { white-space: nowrap; }
     return THEMES.some(function (t) { return t.id === id; }) ? id : 'autres';
   }
 
+  function estNouvelle(a) {
+    return a.created && Date.parse(a.created) > NEW_AFTER && Date.now() - Date.parse(a.created) < NEW_DAYS * 864e5;
+  }
+
   function render(apps) {
+    var ouvert = listEl.querySelector('.theme-btn[aria-expanded="true"]');
+    ouvert = ouvert && ouvert.dataset.theme;
     listEl.textContent = '';
-    raccourcisEl.textContent = '';
-    var i = 0;
     THEMES.forEach(function (t) {
       var liste = apps.filter(function (a) { return themeDe(a) === t.id; });
       if (!liste.length) return;
@@ -609,25 +621,49 @@ dialog li b { white-space: nowrap; }
       sec.style.setProperty('--t', t.couleur);
       var h = document.createElement('h2');
       h.className = 'theme-titre';
-      h.innerHTML = '<span class="emoji" aria-hidden="true"></span><span class="nom"></span><span class="pastille nb"></span>';
-      h.querySelector('.emoji').textContent = t.emoji;
-      h.querySelector('.nom').textContent = t.titre;
-      h.querySelector('.nb').textContent = liste.length + (liste.length > 1 ? ' applis' : ' appli');
+      var btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'theme-btn'; btn.dataset.theme = t.id;
+      btn.setAttribute('aria-controls', 'liste-' + t.id);
+      btn.innerHTML = '<span class="emoji" aria-hidden="true"></span><span class="milieu"><span class="nom"></span><span class="mini" aria-hidden="true"></span></span><span class="fleche" aria-hidden="true">▼</span>';
+      btn.querySelector('.emoji').textContent = t.emoji;
+      btn.querySelector('.nom').textContent = t.titre;
+      btn.setAttribute('aria-label', t.titre + ', ' + liste.length + (liste.length > 1 ? ' applis' : ' appli'));
+      liste.forEach(function (a) {
+        if (!a.icon) return;
+        var im = document.createElement('img');
+        im.src = a.icon + (a.icon.indexOf('?') < 0 ? '?hub=1' : '&hub=1'); im.alt = ''; im.width = 26; im.height = 26;
+        im.onerror = function () { im.remove(); };
+        btn.querySelector('.mini').appendChild(im);
+      });
+      if (liste.some(estNouvelle)) {
+        var nv = document.createElement('span');
+        nv.className = 'badge-nouveau'; nv.textContent = 'Nouveau !';
+        btn.insertBefore(nv, btn.querySelector('.fleche'));
+      }
+      h.appendChild(btn);
       var ul = document.createElement('ul');
-      ul.className = 'apps'; ul.setAttribute('aria-label', t.titre);
+      ul.className = 'apps'; ul.id = 'liste-' + t.id; ul.setAttribute('aria-label', t.titre);
       sec.append(h, ul);
       listEl.appendChild(sec);
-      var r = document.createElement('li');
-      r.innerHTML = '<a><span class="emoji" aria-hidden="true"></span><span></span></a>';
-      r.firstChild.href = '#theme-' + t.id;
-      r.firstChild.style.setProperty('--t', t.couleur);
-      r.querySelector('.emoji').textContent = t.emoji;
-      r.firstChild.lastChild.textContent = t.court;
-      raccourcisEl.appendChild(r);
-      liste.forEach(function (a) { carte(a, i++, ul, t.couleur); });
+      liste.forEach(function (a, i) { carte(a, i, ul, t.couleur); });
+      ouvrir(btn, t.id === ouvert, false);
     });
     afficherDerniere(apps);
   }
+
+  // Un seul thème ouvert à la fois : l'écran reste simple.
+  function ouvrir(btn, oui, defiler) {
+    btn.setAttribute('aria-expanded', String(oui));
+    document.getElementById(btn.getAttribute('aria-controls')).hidden = !oui;
+    if (oui && defiler) btn.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+  }
+  listEl.addEventListener('click', function (e) {
+    var btn = e.target.closest('.theme-btn');
+    if (!btn) return;
+    var oui = btn.getAttribute('aria-expanded') !== 'true';
+    listEl.querySelectorAll('.theme-btn').forEach(function (b) { if (b !== btn) ouvrir(b, false, false); });
+    ouvrir(btn, oui, true);
+  });
 
   function carte(a, i, ul, couleur) {
     var li = document.createElement('li');
@@ -668,7 +704,7 @@ dialog li b { white-space: nowrap; }
     go.className = 'app-go'; go.textContent = '▶'; go.setAttribute('aria-hidden', 'true');
 
     link.append(icon, text, go);
-    if (a.created && Date.parse(a.created) > NEW_AFTER && Date.now() - Date.parse(a.created) < NEW_DAYS * 864e5) {
+    if (estNouvelle(a)) {
       var b = document.createElement('span');
       b.className = 'badge-nouveau'; b.textContent = 'Nouveau !';
       link.appendChild(b);
