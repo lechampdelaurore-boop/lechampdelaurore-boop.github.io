@@ -16,7 +16,7 @@ La liste se met à jour toute seule. À chaque ouverture, la page demande à Git
 <meta name="appli-marc" content="oui">
 ```
 
-(ou qui portent le sujet GitHub `appli-marc`). Le nom, la description, l'icône et la couleur sont lus dans le `manifest.webmanifest` de l'appli. Une appli créée il y a moins de 14 jours porte un badge « Nouveau ! ». La dernière liste est gardée dans le navigateur pour fonctionner hors ligne.
+(ou qui portent le sujet GitHub `appli-marc`). Le nom, la description, l'icône et la couleur sont lus dans le `manifest.webmanifest` de l'appli. Une appli créée il y a moins de 7 jours porte un badge « Nouveau ! ». La dernière liste est gardée dans le navigateur pour fonctionner hors ligne.
 
 ### Ranger l'appli dans un thème
 
