@@ -6,7 +6,7 @@ Une petite mascotte kawaii originale (Pompon, ou le compagnon choisi par l'enfan
 
 ## Profil : prénom et compagnon
 
-À la première ouverture, une petite fenêtre demande le prénom de l'enfant, puis lui fait choisir son compagnon : Pompon ou une des 30 créatures des applis. L'accueil affiche ensuite « Coucou <prénom> ♥ » avec ce compagnon. Le bouton ⚙ permet de les changer. Tout reste dans le navigateur de l'appareil (clé `marc.profil`, partagée par toutes les applis du site) ; rien n'est envoyé sur internet.
+À la première ouverture, une petite fenêtre demande le prénom de l'enfant, puis lui fait choisir son compagnon : Pompon ou une des 30 créatures des applis. L'accueil affiche ensuite « Coucou <prénom> ♥ » avec ce compagnon. Le bouton ⚙ permet de les changer. Tout reste dans le navigateur de l'appareil (clé `marc.profil`, partagée par toutes les applis du site) ; le prénom n'est jamais envoyé sur internet.
 
 ## Ajouter une appli : rien à faire ici
 
@@ -40,9 +40,15 @@ Pour qu'une nouvelle appli soit propre :
 
 Installer l'accueil une seule fois (Chrome sur Android : bouton « Mettre sur l'écran d'accueil » ou menu ⋮ puis « Installer l'application » ; Safari sur iPhone : Partager puis « Sur l'écran d'accueil »). Toutes les applis s'ouvrent ensuite en plein écran depuis l'accueil. Chaque appli peut aussi s'installer seule.
 
+## Compteur de visites
+
+Chaque page (l'accueil et chaque appli) envoie un signal anonyme à [GoatCounter](https://www.goatcounter.com) quand elle s'ouvre avec internet : l'adresse de la page, son titre, la page d'où l'on vient et la taille de l'écran. Pas de cookie, pas de prénom, rien sur les progrès. Hors connexion, rien n'est envoyé et l'appli marche pareil. Le tableau des visites (par appli, par jour, par heure) est sur lechampdelaurore.goatcounter.com, réservé au propriétaire du compte.
+
+Pour qu'un appareil ne soit plus compté (celui des parents, par exemple), ouvrir une fois https://lechampdelaurore-boop.github.io/#sans-compteur : cela vaut pour toutes les applis de ce navigateur. `#avec-compteur` annule. Les tests automatiques ne sont pas comptés.
+
 ## Fichiers
 
-- `index.html` : toute la page (HTML, CSS et JavaScript, sans bibliothèque). Rien n'est envoyé sur internet, à part la lecture de la liste publique des dépôts sur l'API GitHub.
+- `index.html` : toute la page (HTML, CSS et JavaScript, sans bibliothèque). Rien n'est envoyé sur internet, à part la lecture de la liste publique des dépôts sur l'API GitHub et le compteur de visites anonyme (voir plus bas).
 - `sw.js` et `manifest.webmanifest` : installation et hors ligne. Le service worker couvre tout le site mais ne s'occupe que des fichiers de l'accueil et des icônes affichées (`?hub=1`) ; chaque appli garde son propre `sw.js`. Après une modification, changer la valeur de `CACHE` dans `sw.js`.
 - `icons/` : icônes de Pompon ; `fonts/` : polices Fredoka et Nunito (licence SIL Open Font License, voir `OFL-*.txt`).
 - `tests/en-ligne.cjs` et `.github/workflows/test-en-ligne.yml` : après chaque mise en ligne, et chaque matin, GitHub ouvre le vrai site dans Chrome au format téléphone (5 tailles) et vérifie que l'accueil liste les applis, puis que l'accueil et chaque appli sont installables (avis de Chrome, manifeste, icônes, service worker), sans erreur console, et se rouvrent hors ligne. Résultat et captures dans l'onglet Actions. Lancement local : `npm install --no-save playwright && node tests/en-ligne.cjs`.
