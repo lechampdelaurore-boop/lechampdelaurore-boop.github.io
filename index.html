@@ -573,8 +573,15 @@ dialog li b { white-space: nowrap; }
     { id: 'ecrire', court: 'Écrire', titre: 'Écrire sans fautes',   emoji: '✏️', couleur: 'var(--v-rose)' },
     { id: 'maths',  court: 'Maths',  titre: 'Maths',                emoji: '🔢', couleur: 'var(--v-soleil)' },
     { id: 'monde',  court: 'Monde',  titre: 'Découvrir le monde',   emoji: '🌍', couleur: 'var(--v-menthe)' },
+    { id: 'anglais', court: 'Anglais', titre: 'Anglais',             svg: 'drapeaux', couleur: 'var(--v-peche)' },
     { id: 'autres', court: 'Autres', titre: 'Autres applis',        emoji: '✨', couleur: 'var(--v-lilas)' }
   ];
+  // Pastilles dessinées (un emoji de drapeau s'affiche en lettres « GB US » sur Windows).
+  var PASTILLES = {
+    drapeaux: '<svg viewBox="0 0 100 100" width="50" height="50" style="overflow:visible">' +
+      '<g stroke="#2B2340" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"><g transform="translate(4 14) rotate(-8 30 18)"><clipPath id="drapeau-uk"><rect x="0" y="0" width="60" height="36" rx="3"/></clipPath><g clip-path="url(#drapeau-uk)" stroke="none"><rect width="60" height="36" fill="#1F3C88"/><path d="M0 0L60 36M60 0L0 36" stroke="#fff" stroke-width="8"/><path d="M0 0L60 36M60 0L0 36" stroke="#D7263D" stroke-width="2.6"/><path d="M30 0V36M0 18H60" stroke="#fff" stroke-width="12"/><path d="M30 0V36M0 18H60" stroke="#D7263D" stroke-width="7"/></g><rect x="0" y="0" width="60" height="36" rx="3" fill="none"/></g><g transform="translate(36 50) rotate(6 30 18)"><clipPath id="drapeau-us"><rect x="0" y="0" width="60" height="36" rx="3"/></clipPath><g clip-path="url(#drapeau-us)" stroke="none"><rect width="60" height="36" fill="#fff"/><rect y="0.00" width="60" height="5.14" fill="#D7263D"/><rect y="10.29" width="60" height="5.14" fill="#D7263D"/><rect y="20.57" width="60" height="5.14" fill="#D7263D"/><rect y="30.86" width="60" height="5.14" fill="#D7263D"/><rect width="27" height="20.57" fill="#1F3C88"/><circle cx="5" cy="4" r="1.7" fill="#fff"/><circle cx="13" cy="4" r="1.7" fill="#fff"/><circle cx="21" cy="4" r="1.7" fill="#fff"/><circle cx="9" cy="9.5" r="1.7" fill="#fff"/><circle cx="17" cy="9.5" r="1.7" fill="#fff"/><circle cx="5" cy="15" r="1.7" fill="#fff"/><circle cx="13" cy="15" r="1.7" fill="#fff"/><circle cx="21" cy="15" r="1.7" fill="#fff"/></g><rect x="0" y="0" width="60" height="36" rx="3" fill="none"/></g></g>' +
+      '</svg>'
+  };
   // Thème des applis qui n'ont pas encore la balise appli-theme (la balise gagne si elle existe).
   var THEME_PAR_DEFAUT = {
     'petites-histoires': 'lire', 'fluence': 'lire', 'par-coeur': 'lire',
@@ -626,7 +633,8 @@ dialog li b { white-space: nowrap; }
       btn.type = 'button'; btn.className = 'theme-btn'; btn.dataset.theme = t.id;
       btn.setAttribute('aria-controls', 'liste-' + t.id);
       btn.innerHTML = '<span class="emoji" aria-hidden="true"></span><span class="milieu"><span class="nom"></span><span class="mini" aria-hidden="true"></span></span><span class="fleche" aria-hidden="true">▼</span>';
-      btn.querySelector('.emoji').textContent = t.emoji;
+      if (t.svg) btn.querySelector('.emoji').innerHTML = PASTILLES[t.svg];
+      else btn.querySelector('.emoji').textContent = t.emoji;
       btn.querySelector('.nom').textContent = t.titre;
       btn.setAttribute('aria-label', t.titre + ', ' + liste.length + (liste.length > 1 ? ' applis' : ' appli'));
       liste.forEach(function (a) {
